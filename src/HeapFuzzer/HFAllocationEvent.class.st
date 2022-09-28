@@ -8,7 +8,7 @@ Class {
 		'isNew',
 		'isRoot'
 	],
-	#category : #HeapFuzzer
+	#category : #'HeapFuzzer-Core'
 }
 
 { #category : #building }

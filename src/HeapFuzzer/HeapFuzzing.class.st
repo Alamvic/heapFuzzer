@@ -7,7 +7,7 @@ Class {
 		'events',
 		'classCache'
 	],
-	#category : #HeapFuzzer
+	#category : #'HeapFuzzer-Core'
 }
 
 { #category : #'as yet unclassified' }

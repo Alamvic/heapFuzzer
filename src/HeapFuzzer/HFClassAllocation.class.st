@@ -1,5 +1,5 @@
 Class {
 	#name : #HFClassAllocation,
 	#superclass : #HFAllocation,
-	#category : #HeapFuzzer
+	#category : #'HeapFuzzer-Core'
 }

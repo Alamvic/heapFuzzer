@@ -1,7 +1,7 @@
 Class {
 	#name : #HFNewSpaceCollectionEvent,
 	#superclass : #HFCollectionEvent,
-	#category : #HeapFuzzer
+	#category : #'HeapFuzzer-Core'
 }
 
 { #category : #executing }

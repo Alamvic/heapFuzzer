@@ -1,7 +1,7 @@
 Class {
 	#name : #HeapFuzzingSuccess,
 	#superclass : #Object,
-	#category : #HeapFuzzer
+	#category : #'HeapFuzzer-Core'
 }
 
 { #category : #control }

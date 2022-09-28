@@ -1,7 +1,7 @@
 Class {
 	#name : #HFFuzzerTest,
 	#superclass : #TestCase,
-	#category : #HeapFuzzer
+	#category : #'HeapFuzzer-Tests'
 }
 
 { #category : #tests }

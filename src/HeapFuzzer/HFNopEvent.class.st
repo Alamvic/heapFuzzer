@@ -1,7 +1,7 @@
 Class {
 	#name : #HFNopEvent,
 	#superclass : #Object,
-	#category : #HeapFuzzer
+	#category : #'HeapFuzzer-Core'
 }
 
 { #category : #executing }

@@ -5,7 +5,7 @@ Class {
 		'error',
 		'fuzzing'
 	],
-	#category : #HeapFuzzer
+	#category : #'HeapFuzzer-Core'
 }
 
 { #category : #debugging }

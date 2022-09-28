@@ -5,7 +5,7 @@ Class {
 		'classCache',
 		'fuzzer'
 	],
-	#category : #HeapFuzzer
+	#category : #'HeapFuzzer-Tests'
 }
 
 { #category : #accessing }
