@@ -1,7 +1,7 @@
 Class {
 	#name : #HFCollectionEvent,
 	#superclass : #Object,
-	#category : #'HeapFuzzer-Core'
+	#category : #HeapFuzzer
 }
 
 { #category : #building }

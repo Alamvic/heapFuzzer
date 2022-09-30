@@ -6,7 +6,7 @@ Class {
 		'referee',
 		'index'
 	],
-	#category : #'HeapFuzzer-Core'
+	#category : #HeapFuzzer
 }
 
 { #category : #building }

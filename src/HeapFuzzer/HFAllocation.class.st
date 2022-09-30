@@ -5,7 +5,7 @@ Class {
 		'oop',
 		'hash'
 	],
-	#category : #'HeapFuzzer-Core'
+	#category : #HeapFuzzer
 }
 
 { #category : #testing }
