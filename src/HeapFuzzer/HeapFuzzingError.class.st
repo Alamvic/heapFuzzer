@@ -3,9 +3,10 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'error',
-		'fuzzing'
+		'fuzzing',
+		'iterations'
 	],
-	#category : #'HeapFuzzer-Core'
+	#category : #HeapFuzzer
 }
 
 { #category : #debugging }
@@ -27,6 +28,12 @@ HeapFuzzingError >> error: anObject [
 ]
 
 { #category : #accessing }
+HeapFuzzingError >> events [
+	
+	^ fuzzing events
+]
+
+{ #category : #accessing }
 HeapFuzzingError >> fuzzing [
 
 	^ fuzzing
@@ -45,9 +52,26 @@ HeapFuzzingError >> ifError: aFullBlockClosure [
 ]
 
 { #category : #testing }
+HeapFuzzingError >> isError [
+	
+	^ true
+]
+
+{ #category : #testing }
 HeapFuzzingError >> isReducible [
 	
 	^ fuzzing isReducible
+]
+
+{ #category : #accessing }
+HeapFuzzingError >> iterations [
+	^ iterations
+]
+
+{ #category : #accessing }
+HeapFuzzingError >> iterations: anInteger [ 
+	
+	iterations := anInteger
 ]
 
 { #category : #reduction }

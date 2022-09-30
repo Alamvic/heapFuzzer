@@ -5,9 +5,10 @@ Class {
 		'heap',
 		'allocations',
 		'events',
-		'classCache'
+		'classCache',
+		'count'
 	],
-	#category : #'HeapFuzzer-Core'
+	#category : #HeapFuzzer
 }
 
 { #category : #'as yet unclassified' }
@@ -59,8 +60,10 @@ HeapFuzzing >> allocations [
 HeapFuzzing >> basicExecute [
 
 	self prepareHeap.
+	self events doWithIndex: [ :event :index | 
+		count := index.
+		event executeOn: self ].
 	self events do: #reset.
-	self events do: [ :event | event executeOn: self ]
 ]
 
 { #category : #building }
@@ -87,6 +90,11 @@ HeapFuzzing >> classWithFormat: format fixedSlots: fixedSlots [
 				oop: theNewClass;
 				objectHash: hash;
 				yourself ]
+]
+
+{ #category : #accessing }
+HeapFuzzing >> count [
+	^ count
 ]
 
 { #category : #builders }
@@ -122,6 +130,7 @@ HeapFuzzing >> execute [
 		on: Error , Halt
 		do: [ :error | 
 			^ HeapFuzzingError new
+				  iterations: count;
 				  error: error freeze;
 				  fuzzing: self;
 				  yourself ].
@@ -166,6 +175,7 @@ HeapFuzzing >> newHeapEvent [
 HeapFuzzing >> prepareHeap [
 
 	classCache := nil.
+	count := 0.
 	heap := VMHeapFuzzer new.
 	heap setUp.
 	heap memory setCheckForLeaks: 31 "all"
@@ -174,10 +184,13 @@ HeapFuzzing >> prepareHeap [
 { #category : #reducing }
 HeapFuzzing >> reduce [
 
-	| reducedCopy |
+	| reducedCopy previousCopy |
 	reducedCopy := self.
-	[ reducedCopy isReducible ] whileTrue: [ 
-		reducedCopy := reducedCopy reduceStep ].
+	previousCopy := nil.
+	[ previousCopy ~= reducedCopy and: [ reducedCopy isReducible ] ] 
+		whileTrue: [ 
+			previousCopy := reducedCopy.
+			reducedCopy := reducedCopy reduceStep ].
 	^ reducedCopy
 ]
 
