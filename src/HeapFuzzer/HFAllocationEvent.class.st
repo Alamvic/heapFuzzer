@@ -87,17 +87,20 @@ HFAllocationEvent >> ephemeronFormat: aVMHeapFuzzer [
 ]
 
 { #category : #executing }
-HFAllocationEvent >> executeOn: aVMHeapFuzzer [ 
+HFAllocationEvent >> executeOn: aVMHeapFuzzer [
 
 	oop := isNew
-		ifTrue: [ self allocateNew: aVMHeapFuzzer ]
-		ifFalse: [ self allocateOld: aVMHeapFuzzer ].
+		       ifTrue: [ self allocateNew: aVMHeapFuzzer ]
+		       ifFalse: [ self allocateOld: aVMHeapFuzzer ].
+	oop ifNil: [ 
+		aVMHeapFuzzer heap memory growOldSpaceByAtLeast: 0.
+		^ self executeOn: aVMHeapFuzzer ].
 	aVMHeapFuzzer heap memory
 		fillObj: oop
 		numSlots: objectSize
 		with: aVMHeapFuzzer heap memory nilObject.
 	isRoot ifTrue: [ aVMHeapFuzzer addRoot: oop ].
-	hash := aVMHeapFuzzer heap memory hashBitsOf: oop.
+	hash := aVMHeapFuzzer heap memory hashBitsOf: oop
 ]
 
 { #category : #accessing }
