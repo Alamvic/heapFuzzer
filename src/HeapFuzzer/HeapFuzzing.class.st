@@ -14,8 +14,14 @@ Class {
 { #category : #'as yet unclassified' }
 HeapFuzzing class >> withRandomEvents [
 
+	^ self withRandomEvents: 100
+]
+
+{ #category : #'instance creation' }
+HeapFuzzing class >> withRandomEvents: anInteger [ 
+	
 	^ self new
-		withRandomEvents;
+		withRandomEvents: anInteger;
 		yourself
 ]
 
@@ -102,9 +108,10 @@ HeapFuzzing >> eventBuilders [
 
 	^ { 
 		  HFNewSpaceCollectionEvent.
-		  HFOldSpaceCollectionEvent.
-		  HFAllocationEvent.
-		  HFMutatorEvent }
+		  HFOldSpaceCollectionEvent }
+	  , (Array new: 20 withAll: HFAllocationEvent)
+	  , (Array new: 20 withAll: HFMutatorEvent)
+	  , (Array new: 10 withAll: HFPinObjectEvent)
 ]
 
 { #category : #accessing }
@@ -138,10 +145,10 @@ HeapFuzzing >> execute [
 ]
 
 { #category : #fuzzing }
-HeapFuzzing >> generateEvents [
+HeapFuzzing >> generateEvents: numberOfEvents [
 	
 	^ Array streamContents: [ :str |
-		1 to: 100 do: [ :i |
+		1 to: numberOfEvents do: [ :i |
 			str nextPut: self newHeapEvent ] ]
 	
 ]
@@ -268,7 +275,7 @@ HeapFuzzing >> remapObjects [
 ]
 
 { #category : #accessing }
-HeapFuzzing >> withRandomEvents [
-	
-	events := self generateEvents
+HeapFuzzing >> withRandomEvents: numberOfEvents [
+
+	events := self generateEvents: numberOfEvents
 ]

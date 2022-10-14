@@ -19,15 +19,16 @@ HFAllocationEvent class >> buildEventOn: aHeapFuzzer [
 
 { #category : #helpers }
 HFAllocationEvent class >> newObjectSize [
-	
+
 	"in slots size"
-	^ 20 atRandom
+
+	^ 2000 atRandom
 ]
 
 { #category : #helpers }
 HFAllocationEvent class >> newObjectType [
 
-	^ { #ephemeron } atRandom
+	^ { #ephemeron . #array } atRandom
 ]
 
 { #category : #'instance creation' }
@@ -44,33 +45,45 @@ HFAllocationEvent class >> newRandom [
 { #category : #executing }
 HFAllocationEvent >> allocateNew: aVMHeapFuzzer [
 
-	| classObj |
-	objectType ~= #ephemeron ifTrue: [ ^ self halt ].
-
+	| classObj format |
+	format := self
+		          perform: (objectType asString , 'Format:') asSymbol
+		          with: aVMHeapFuzzer.
 	classObj := aVMHeapFuzzer
-		            classWithFormat:
-		            aVMHeapFuzzer heap memory ephemeronFormat
+		            classWithFormat: format
 		            fixedSlots: objectSize.
 	^ aVMHeapFuzzer heap memory
 		  allocateSlots: objectSize
-		  format: aVMHeapFuzzer heap memory ephemeronFormat
+		  format: format
 		  classIndex: classObj objectHash
 ]
 
 { #category : #executing }
 HFAllocationEvent >> allocateOld: aVMHeapFuzzer [
 
-	| classObj |
-	objectType ~= #ephemeron ifTrue: [ ^ self halt ].
-
+	| classObj format |
+	format := self
+		          perform: (objectType asString , 'Format:') asSymbol
+		          with: aVMHeapFuzzer.
 	classObj := aVMHeapFuzzer
-		            classWithFormat:
-		            aVMHeapFuzzer heap memory ephemeronFormat
+		            classWithFormat: format
 		            fixedSlots: objectSize.
 	^ aVMHeapFuzzer heap memory
 		  allocateSlotsInOldSpace: objectSize
-		  format: aVMHeapFuzzer heap memory ephemeronFormat
+		  format: format
 		  classIndex: classObj objectHash
+]
+
+{ #category : #accessing }
+HFAllocationEvent >> arrayFormat: aHeapFuzzing [ 
+	
+	^ aHeapFuzzing heap memory arrayFormat
+]
+
+{ #category : #executing }
+HFAllocationEvent >> ephemeronFormat: aVMHeapFuzzer [
+
+	^ aVMHeapFuzzer heap memory ephemeronFormat
 ]
 
 { #category : #executing }

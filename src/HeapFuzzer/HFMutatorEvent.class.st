@@ -18,6 +18,8 @@ HFMutatorEvent class >> buildEventOn: aHeapFuzzer [
 	object1 := aHeapFuzzer allocations atRandom.
 	object2 := aHeapFuzzer allocations atRandom.
 	
+	object1 numberOfSlots <= 0 ifTrue: [ ^ HFNopEvent new ].
+	
 	^ self new
 		referer: object1;
 		referee: object2;
