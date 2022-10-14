@@ -11,6 +11,8 @@ Class {
 { #category : #testing }
 HFAllocation >> isMaybeAliveIn: aHeapFuzzing [ 
 	
+	oop ifNil: [ ^ false ].
+
 	(aHeapFuzzing heap memory hashBitsOf: oop) = hash
 		ifFalse: [ ^ false ].
 	
