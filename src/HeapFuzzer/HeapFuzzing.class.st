@@ -11,26 +11,11 @@ Class {
 	#category : #HeapFuzzer
 }
 
-{ #category : #'as yet unclassified' }
-HeapFuzzing class >> withRandomEvents [
-
-	^ self withRandomEvents: 100
-]
-
-{ #category : #'instance creation' }
-HeapFuzzing class >> withRandomEvents: anInteger [ 
+{ #category : #'ston-core' }
+HeapFuzzing class >> stonAllInstVarNames [
+	"Override to encode my instances using a custom set of instance variables or to define their order."
 	
-	^ self new
-		withRandomEvents: anInteger;
-		yourself
-]
-
-{ #category : #accessing }
-HeapFuzzing >> addAllocation: aHFAllocationEvent [ 
-	
-	allocations add: aHFAllocationEvent.
-	aHFAllocationEvent id: allocations size.
-	^ aHFAllocationEvent
+	^ self allInstVarNames copyWithout: 'heap'
 ]
 
 { #category : #accessing }
@@ -66,10 +51,15 @@ HeapFuzzing >> allocations [
 HeapFuzzing >> basicExecute [
 
 	self prepareHeap.
-	self events doWithIndex: [ :event :index | 
-		count := index.
-		event executeOn: self ].
-	self events do: #reset.
+	(1 to: self events size)
+		do: [ :index | 
+			| event |
+			event := self events at: index.
+			count := index.
+			event executeOn: self ]
+		displayingProgress: [ :iteration | 
+		'Fuzzing Event ' , iteration asString ].
+	self events do: #reset
 ]
 
 { #category : #building }
@@ -103,17 +93,6 @@ HeapFuzzing >> count [
 	^ count
 ]
 
-{ #category : #builders }
-HeapFuzzing >> eventBuilders [
-
-	^ { 
-		  HFNewSpaceCollectionEvent.
-		  HFOldSpaceCollectionEvent }
-	  , (Array new: 20 withAll: HFAllocationEvent)
-	  , (Array new: 20 withAll: HFMutatorEvent)
-	  , (Array new: 10 withAll: HFPinObjectEvent)
-]
-
 { #category : #accessing }
 HeapFuzzing >> events [
 	
@@ -144,15 +123,6 @@ HeapFuzzing >> execute [
 	^ HeapFuzzingSuccess new
 ]
 
-{ #category : #fuzzing }
-HeapFuzzing >> generateEvents: numberOfEvents [
-	
-	^ Array streamContents: [ :str |
-		1 to: numberOfEvents do: [ :i |
-			str nextPut: self newHeapEvent ] ]
-	
-]
-
 { #category : #accessing }
 HeapFuzzing >> heap [
 	^ heap
@@ -162,7 +132,6 @@ HeapFuzzing >> heap [
 HeapFuzzing >> initialize [
 
 	super initialize.
-	allocations := OrderedCollection new.
 	events := OrderedCollection new
 ]
 
@@ -170,12 +139,6 @@ HeapFuzzing >> initialize [
 HeapFuzzing >> isReducible [
 	
 	^ self events size > 1
-]
-
-{ #category : #fuzzing }
-HeapFuzzing >> newHeapEvent [
-	
-	^ self eventBuilders atRandom buildEventOn: self
 ]
 
 { #category : #preparing }
@@ -272,10 +235,4 @@ HeapFuzzing >> remapObjects [
 	
 	self relocateClassesWith: relocationMap.
 	allocations do: [ :allocation | allocation remapObjectOn: relocationMap ].
-]
-
-{ #category : #accessing }
-HeapFuzzing >> withRandomEvents: numberOfEvents [
-
-	events := self generateEvents: numberOfEvents
 ]

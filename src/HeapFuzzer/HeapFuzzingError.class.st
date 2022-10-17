@@ -9,6 +9,13 @@ Class {
 	#category : #HeapFuzzer
 }
 
+{ #category : #'ston-core' }
+HeapFuzzingError class >> stonAllInstVarNames [
+	"Override to encode my instances using a custom set of instance variables or to define their order."
+	
+	^ self allInstVarNames copyWithout: 'error'
+]
+
 { #category : #debugging }
 HeapFuzzingError >> debug [
 	
