@@ -21,7 +21,8 @@ HeapFuzzing class >> stonAllInstVarNames [
 { #category : #accessing }
 HeapFuzzing >> addEvent: anEvent [
 
-	events add: anEvent
+	events add: anEvent.
+	anEvent isAllocation ifTrue: [ allocations add: anEvent ]
 ]
 
 { #category : #configuring }
@@ -50,7 +51,7 @@ HeapFuzzing >> allocations [
 { #category : #fuzzing }
 HeapFuzzing >> basicExecute [
 
-	self prepareHeap.
+	self setUp.
 	(1 to: self events size)
 		do: [ :index | 
 			| event |
@@ -59,7 +60,7 @@ HeapFuzzing >> basicExecute [
 			event executeOn: self ]
 		displayingProgress: [ :iteration | 
 		'Fuzzing Event ' , iteration asString ].
-	self events do: #reset
+	self tearDown
 ]
 
 { #category : #building }
@@ -132,6 +133,7 @@ HeapFuzzing >> heap [
 HeapFuzzing >> initialize [
 
 	super initialize.
+	allocations := OrderedCollection new.
 	events := OrderedCollection new
 ]
 
@@ -144,8 +146,6 @@ HeapFuzzing >> isReducible [
 { #category : #preparing }
 HeapFuzzing >> prepareHeap [
 
-	classCache := nil.
-	count := 0.
 	heap := VMHeapFuzzer new.
 	heap setUp.
 	heap memory setCheckForLeaks: 31 "all"
@@ -235,4 +235,18 @@ HeapFuzzing >> remapObjects [
 	
 	self relocateClassesWith: relocationMap.
 	allocations do: [ :allocation | allocation remapObjectOn: relocationMap ].
+]
+
+{ #category : #preparing }
+HeapFuzzing >> setUp [
+
+	classCache := nil.
+	count := 0.
+	self prepareHeap
+]
+
+{ #category : #fuzzing }
+HeapFuzzing >> tearDown [
+
+	^ events do: #reset
 ]

@@ -4,7 +4,10 @@ Class {
 	#instVars : [
 		'numberOfEvents',
 		'eventBuilders',
-		'allocations'
+		'allocations',
+		'timeout',
+		'eventsSize',
+		'startTime'
 	],
 	#category : #HeapFuzzer
 }
@@ -92,12 +95,9 @@ HeapFuzzer >> allocations [
 ]
 
 { #category : #fuzzing }
-HeapFuzzer >> buildEvents [
-
-	^ Array streamContents: [ :str |
-		1 to: numberOfEvents do: [ :i |
-			str nextPut: self newHeapEvent ] ]
+HeapFuzzer >> atEnd [
 	
+	^ timeout atEnd: self
 ]
 
 { #category : #fuzzing }
@@ -112,19 +112,54 @@ HeapFuzzer >> eventBuilders: anObject [
 	eventBuilders := anObject
 ]
 
+{ #category : #accessing }
+HeapFuzzer >> eventsSize [
+
+	^ eventsSize
+]
+
 { #category : #fuzzing }
 HeapFuzzer >> fuzz [
 
 	| fuzzing |
-	fuzzing := HeapFuzzing new events: self buildEvents.
-	^ fuzzing execute
+	fuzzing := HeapFuzzing new.
+	fuzzing setUp.
+	[self atEnd] whileFalse: [ | event |
+		event := self newHeapEvent.
+		fuzzing addEvent: event.
+		event executeOn: fuzzing
+	].
+	fuzzing tearDown.
+	^ fuzzing
+]
+
+{ #category : #fuzzing }
+HeapFuzzer >> fuzzFor: aDuration [
+
+	timeout := HFTimeTimeout new
+		           maxTime: aDuration;
+		           yourself.
+	^ self fuzz
+]
+
+{ #category : #fuzzing }
+HeapFuzzer >> fuzzTimes: anInteger [
+
+	timeout := HFIterationsTimeout new
+		           maxIterations: anInteger;
+		           yourself.
+	^ self fuzz
 ]
 
 { #category : #fuzzing }
 HeapFuzzer >> initialize [
 
 	super initialize.
-	numberOfEvents := 100.
+	timeout := HFIterationsTimeout new
+		           maxIterations: 1000;
+		           yourself.
+	eventsSize := 0.
+	startTime := DateAndTime now.
 	allocations := OrderedCollection new.
 	eventBuilders := OrderedCollection new
 ]
@@ -132,6 +167,7 @@ HeapFuzzer >> initialize [
 { #category : #fuzzing }
 HeapFuzzer >> newHeapEvent [
 	
+	eventsSize := eventsSize + 1.
 	^ self eventBuilders atRandom buildEventOn: self
 ]
 
@@ -145,4 +181,16 @@ HeapFuzzer >> numberOfEvents [
 HeapFuzzer >> numberOfEvents: anObject [
 
 	numberOfEvents := anObject
+]
+
+{ #category : #accessing }
+HeapFuzzer >> startTime [
+
+	^ startTime
+]
+
+{ #category : #fuzzing }
+HeapFuzzer >> timeout: aTimeout [
+
+	timeout := aTimeout
 ]
