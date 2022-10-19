@@ -1,5 +1,5 @@
 Class {
-	#name : #HFErrorAnalysis,
+	#name : #HFErrorsClassifier,
 	#superclass : #Object,
 	#instVars : [
 		'path'
@@ -8,7 +8,7 @@ Class {
 }
 
 { #category : #classification }
-HFErrorAnalysis >> classify: experimentLabel [
+HFErrorsClassifier >> classify: experimentLabel [
 
 	| errorsWithExceptions errorsWithInterestingExceptions errorsWithLabels |
 	errorsWithExceptions := self exceptionsFor: experimentLabel.
@@ -26,22 +26,38 @@ HFErrorAnalysis >> classify: experimentLabel [
 ]
 
 { #category : #classification }
-HFErrorAnalysis >> exceptionsFor: experimentLabel [
+HFErrorsClassifier >> exceptionsFor: experimentLabel [
 
-	| ston exceptions |
-	ston := STON fromStream: path asFileReference readStream.
+	| results exceptions |
+	results := self resultsFor: experimentLabel.
 	exceptions := Dictionary new.
-	(ston at: experimentLabel) flattened do: [ :assoc | 
-		| heapFuzzzing |
-		heapFuzzzing := assoc value.
-		[ heapFuzzzing basicExecute ]
+	(self fuzzingsIn: results) do: [ :heapFuzzing | 
+		[ heapFuzzing basicExecute ]
 			on: Error
-			do: [ :ex | exceptions at: assoc value put: ex freeze ] ].
+			do: [ :ex | exceptions at: heapFuzzing put: ex freeze ] ].
 	^ exceptions
 ]
 
 { #category : #classification }
-HFErrorAnalysis >> interestingContextForException: anException [
+HFErrorsClassifier >> fileName [
+
+	^ self subclassResponsibility
+]
+
+{ #category : #'accessing - data' }
+HFErrorsClassifier >> filePath [
+
+	^ path , '/' , self fileName
+]
+
+{ #category : #classification }
+HFErrorsClassifier >> fuzzingsIn: results [
+
+	^ self subclassResponsibility
+]
+
+{ #category : #classification }
+HFErrorsClassifier >> interestingContextForException: anException [
 
 	| context |
 	context := anException signalContext.
@@ -53,13 +69,15 @@ HFErrorAnalysis >> interestingContextForException: anException [
 ]
 
 { #category : #classification }
-HFErrorAnalysis >> isInterestingPackage: packageName [
+HFErrorsClassifier >> isInterestingPackage: packageName [
 
 	^ packageName = #VMMaker
 ]
 
 { #category : #classification }
-HFErrorAnalysis >> labelForContext: context [
+HFErrorsClassifier >> labelForContext: context [
+
+	context ifNil: [ ^ nil ].
 
 	^ { 
 		  context selector.
@@ -69,13 +87,21 @@ HFErrorAnalysis >> labelForContext: context [
 ]
 
 { #category : #accessing }
-HFErrorAnalysis >> path [
+HFErrorsClassifier >> path [
 
 	^ path
 ]
 
 { #category : #accessing }
-HFErrorAnalysis >> path: anObject [
+HFErrorsClassifier >> path: anObject [
 
 	path := anObject
+]
+
+{ #category : #'accessing - data' }
+HFErrorsClassifier >> resultsFor: experimentLabel [
+
+	| ston |
+	ston := STON fromStream: self filePath asFileReference readStream.
+	^ ston at: experimentLabel
 ]
