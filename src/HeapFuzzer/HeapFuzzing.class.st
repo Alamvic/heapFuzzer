@@ -186,24 +186,22 @@ HeapFuzzing >> reduceBetween: index1 and: index2 [
 { #category : #reducing }
 HeapFuzzing >> reduceBy: number [
 
-	| nextCut |
+	| nextCut errorResult |
 	nextCut := self events size.
+	errorResult := self execute.
 
 	[ nextCut > 0 ] whileTrue: [ 
 		| beforeCut afterCut eventsWithoutCut reducedCopy result |
 		afterCut := self events copyFrom: nextCut + 1 to: self events size.
 		beforeCut := nextCut - number <= 0
-			            ifTrue: [ #(  ) ]
-			            ifFalse: [ 
-			            self events
-				            copyFrom: 1
-				            to: nextCut - number ].
+			             ifTrue: [ #(  ) ]
+			             ifFalse: [ self events copyFrom: 1 to: nextCut - number ].
 		eventsWithoutCut := beforeCut , afterCut.
 
 		reducedCopy := self copy.
 		reducedCopy events: eventsWithoutCut.
 		result := reducedCopy execute.
-		result ifError: [ ^ result ].
+		result ifError: [ errorResult label = result label ifTrue: [ ^ result ] ].
 
 		nextCut := nextCut - number ].
 

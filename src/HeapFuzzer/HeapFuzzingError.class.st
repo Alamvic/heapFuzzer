@@ -58,10 +58,28 @@ HeapFuzzingError >> ifError: aFullBlockClosure [
 	^ aFullBlockClosure value
 ]
 
+{ #category : #classification }
+HeapFuzzingError >> interestingContextForException: anException [
+
+	| context |
+	context := anException signalContext.
+	[ context isNotNil ] whileTrue: [ 
+		(self isInterestingPackage: context methodClass package name) 
+			ifTrue: [ ^ context ].
+		context := context sender ].
+	^ nil
+]
+
 { #category : #testing }
 HeapFuzzingError >> isError [
 	
 	^ true
+]
+
+{ #category : #classification }
+HeapFuzzingError >> isInterestingPackage: packageName [
+
+	^ packageName = #VMMaker
 ]
 
 { #category : #testing }
@@ -79,6 +97,26 @@ HeapFuzzingError >> iterations [
 HeapFuzzingError >> iterations: anInteger [ 
 	
 	iterations := anInteger
+]
+
+{ #category : #classification }
+HeapFuzzingError >> label [
+
+	| context |
+	context := self interestingContextForException: error.
+	^ self labelForContext: context
+]
+
+{ #category : #classification }
+HeapFuzzingError >> labelForContext: context [
+
+	context ifNil: [ ^ nil ].
+
+	^ { 
+		  context selector.
+		  context sender selector.
+		  context sender sender selector.
+		  context sender sender sender selector } joinUsing: '<'
 ]
 
 { #category : #reduction }

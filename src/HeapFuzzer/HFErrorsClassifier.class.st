@@ -10,19 +10,10 @@ Class {
 { #category : #classification }
 HFErrorsClassifier >> classify: experimentLabel [
 
-	| errorsWithExceptions errorsWithInterestingExceptions errorsWithLabels |
-	errorsWithExceptions := self exceptionsFor: experimentLabel.
-
-	errorsWithInterestingExceptions := errorsWithExceptions collect: [ 
-		                                   :ex | 
-		                                   self 
-			                                   interestingContextForException:
-			                                   ex ].
-
-	errorsWithLabels := errorsWithInterestingExceptions collect: [ 
-		                    :context | self labelForContext: context ].
-
-	^ errorsWithLabels associations groupedBy: [ :assoc | assoc value ]
+	| fuzzingsWithResults fuzzingsWithLabels |
+	fuzzingsWithResults := self resultsFor: experimentLabel.
+	fuzzingsWithLabels := fuzzingsWithResults asDictionary collect: [ :result | result label ].
+	^ fuzzingsWithLabels associations groupedBy: [ :assoc | assoc value ]
 ]
 
 { #category : #classification }
@@ -36,6 +27,14 @@ HFErrorsClassifier >> exceptionsFor: experimentLabel [
 			on: Error
 			do: [ :ex | exceptions at: heapFuzzing put: ex freeze ] ].
 	^ exceptions
+]
+
+{ #category : #classification }
+HFErrorsClassifier >> experimentAt: experimentLabel [
+
+	| ston |
+	ston := STON fromStream: self filePath asFileReference readStream.
+	^ ston at: experimentLabel
 ]
 
 { #category : #classification }
@@ -56,36 +55,6 @@ HFErrorsClassifier >> fuzzingsIn: results [
 	^ self subclassResponsibility
 ]
 
-{ #category : #classification }
-HFErrorsClassifier >> interestingContextForException: anException [
-
-	| context |
-	context := anException signalContext.
-	[ context isNotNil ] whileTrue: [ 
-		(self isInterestingPackage: context methodClass package name) 
-			ifTrue: [ ^ context ].
-		context := context sender ].
-	^ nil
-]
-
-{ #category : #classification }
-HFErrorsClassifier >> isInterestingPackage: packageName [
-
-	^ packageName = #VMMaker
-]
-
-{ #category : #classification }
-HFErrorsClassifier >> labelForContext: context [
-
-	context ifNil: [ ^ nil ].
-
-	^ { 
-		  context selector.
-		  context sender selector.
-		  context sender sender selector.
-		  context sender sender sender selector } joinUsing: '<'
-]
-
 { #category : #accessing }
 HFErrorsClassifier >> path [
 
@@ -98,10 +67,10 @@ HFErrorsClassifier >> path: anObject [
 	path := anObject
 ]
 
-{ #category : #'accessing - data' }
+{ #category : #classification }
 HFErrorsClassifier >> resultsFor: experimentLabel [
 
-	| ston |
-	ston := STON fromStream: self filePath asFileReference readStream.
-	^ ston at: experimentLabel
+	| experiment exceptions |
+	experiment := self experimentAt: experimentLabel.
+	^ (self fuzzingsIn: experiment) collect: [ :heapFuzzing | heapFuzzing -> heapFuzzing execute ]
 ]
