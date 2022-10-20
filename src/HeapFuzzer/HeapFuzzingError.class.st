@@ -1,10 +1,10 @@
 Class {
 	#name : #HeapFuzzingError,
-	#superclass : #Object,
+	#superclass : #HeapFuzzingResult,
 	#instVars : [
 		'error',
-		'fuzzing',
-		'iterations'
+		'iterations',
+		'timestamp'
 	],
 	#category : #HeapFuzzer
 }
@@ -40,22 +40,17 @@ HeapFuzzingError >> events [
 	^ fuzzing events
 ]
 
-{ #category : #accessing }
-HeapFuzzingError >> fuzzing [
-
-	^ fuzzing
-]
-
-{ #category : #accessing }
-HeapFuzzingError >> fuzzing: anObject [
-
-	fuzzing := anObject
-]
-
 { #category : #control }
 HeapFuzzingError >> ifError: aFullBlockClosure [ 
 	
 	^ aFullBlockClosure value
+]
+
+{ #category : #testing }
+HeapFuzzingError >> initialize [
+
+	super initialize.
+	timestamp := DateAndTime now
 ]
 
 { #category : #testing }

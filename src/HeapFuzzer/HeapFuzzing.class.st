@@ -6,7 +6,9 @@ Class {
 		'allocations',
 		'events',
 		'classCache',
-		'count'
+		'count',
+		'timestamp',
+		'deadObjects'
 	],
 	#category : #HeapFuzzer
 }
@@ -134,7 +136,9 @@ HeapFuzzing >> initialize [
 
 	super initialize.
 	allocations := OrderedCollection new.
-	events := OrderedCollection new
+	events := OrderedCollection new.
+	timestamp := DateAndTime now.
+	deadObjects := OrderedCollection new.
 ]
 
 { #category : #testing }
@@ -228,13 +232,19 @@ HeapFuzzing >> relocateClassesWith: relocationMap [
 { #category : #remapping }
 HeapFuzzing >> remapObjects [
 
-	| relocationMap |
+	| relocationMap toKill |
 	relocationMap := Dictionary new.
 	heap memory allObjectsDo: [ :e | 
 		relocationMap at: (heap memory hashBitsOf: e) put: e.].
 	
 	self relocateClassesWith: relocationMap.
-	allocations do: [ :allocation | allocation remapObjectOn: relocationMap ].
+	toKill := OrderedCollection new.
+	allocations do: [ :allocation | 
+		allocation remapObjectOn: relocationMap.
+		allocation oop ifNil: [ toKill add: allocation ] ].
+	toKill do: [ :allocation | 
+		allocations remove: allocation.
+		deadObjects add: allocation. ].
 ]
 
 { #category : #preparing }

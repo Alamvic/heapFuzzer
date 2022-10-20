@@ -59,13 +59,12 @@ HeapFuzzer class >> forEphemerons [
 HeapFuzzer class >> fullRandom [
 
 	^ self new
-		eventBuilders: { 
-				HFNewSpaceCollectionEvent.
-				HFOldSpaceCollectionEvent }
-			, (Array new: 20 withAll: HFAllocationEvent)
-			, (Array new: 20 withAll: HFMutatorEvent)
-			, (Array new: 10 withAll: HFPinObjectEvent);
-		yourself
+		  addEventBuilder: HFNewSpaceCollectionEvent frequency: 1;
+		  addEventBuilder: HFOldSpaceCollectionEvent frequency: 1;
+		  addEventBuilder: HFAllocationEvent frequency: 20;
+		  addEventBuilder: HFMutatorEvent frequency: 20;
+		  addEventBuilder: HFPinObjectEvent frequency: 10;
+		  yourself
 ]
 
 { #category : #fuzzing }
@@ -123,14 +122,30 @@ HeapFuzzer >> fuzz [
 
 	| fuzzing |
 	fuzzing := HeapFuzzing new.
+	[ 
 	fuzzing setUp.
-	[self atEnd] whileFalse: [ | event |
+	[ self atEnd ] whileFalse: [ 
+		| event |
 		event := self newHeapEvent.
 		fuzzing addEvent: event.
-		event executeOn: fuzzing
-	].
-	fuzzing tearDown.
-	^ fuzzing
+		event executeOn: fuzzing ].
+	fuzzing tearDown ]
+		on: Error
+		do: [ :e | 
+			^ HeapFuzzingError new
+				  error: e freeze;
+				  fuzzing: fuzzing;
+				  yourself ].
+	^ HeapFuzzingSuccess new fuzzing: fuzzing
+]
+
+{ #category : #fuzzing }
+HeapFuzzer >> fuzzEvents: anInteger [
+
+	timeout := HFIterationsTimeout new
+		           maxIterations: anInteger;
+		           yourself.
+	^ self fuzz
 ]
 
 { #category : #fuzzing }
@@ -138,15 +153,6 @@ HeapFuzzer >> fuzzFor: aDuration [
 
 	timeout := HFTimeTimeout new
 		           maxTime: aDuration;
-		           yourself.
-	^ self fuzz
-]
-
-{ #category : #fuzzing }
-HeapFuzzer >> fuzzTimes: anInteger [
-
-	timeout := HFIterationsTimeout new
-		           maxIterations: anInteger;
 		           yourself.
 	^ self fuzz
 ]

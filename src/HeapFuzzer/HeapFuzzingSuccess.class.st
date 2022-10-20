@@ -1,6 +1,6 @@
 Class {
 	#name : #HeapFuzzingSuccess,
-	#superclass : #Object,
+	#superclass : #HeapFuzzingResult,
 	#category : #HeapFuzzer
 }
 
