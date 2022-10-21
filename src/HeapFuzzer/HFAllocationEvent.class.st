@@ -100,7 +100,8 @@ HFAllocationEvent >> executeOn: aVMHeapFuzzer [
 		numSlots: objectSize
 		with: aVMHeapFuzzer heap memory nilObject.
 	isRoot ifTrue: [ aVMHeapFuzzer addRoot: oop ].
-	hash := aVMHeapFuzzer heap memory hashBitsOf: oop
+	hash := aVMHeapFuzzer heap memory hashBitsOf: oop.
+	aVMHeapFuzzer addAllocation: self.
 ]
 
 { #category : #accessing }

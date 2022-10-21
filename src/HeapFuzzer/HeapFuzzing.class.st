@@ -20,6 +20,12 @@ HeapFuzzing class >> stonAllInstVarNames [
 	^ self allInstVarNames copyWithout: 'heap'
 ]
 
+{ #category : #adding }
+HeapFuzzing >> addAllocation: aHFAllocationEvent [ 
+	
+	allocations add: aHFAllocationEvent
+]
+
 { #category : #accessing }
 HeapFuzzing >> addEvent: anEvent [
 
@@ -105,9 +111,7 @@ HeapFuzzing >> events [
 { #category : #accessing }
 HeapFuzzing >> events: aCollection [ 
 
-	events := aCollection.
-	allocations := events select: [ :e | e isAllocation ].
-	allocations do: #reset.
+	events := aCollection
 ]
 
 { #category : #fuzzing }
@@ -175,7 +179,7 @@ HeapFuzzing >> reduceBetween: index1 and: index2 [
 	Otherwise, cut the other half, if reproduced => ok.
 	Otherwise, we need to cut differently"
 	
-	| half reducedCopy result |
+	| half result |
 	half := index2 + index1 // 2.
 
 	[ half >= 1 ] whileTrue: [

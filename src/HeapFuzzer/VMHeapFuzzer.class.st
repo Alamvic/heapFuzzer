@@ -32,6 +32,12 @@ VMHeapFuzzer >> fuzzer: anObject [
 	fuzzer := anObject
 ]
 
+{ #category : #printing }
+VMHeapFuzzer >> printHeapMap [
+	
+	memory allHeapEntitiesDo: [ :e | interpreter shortPrintOop: e ]
+]
+
 { #category : #tests }
 VMHeapFuzzer >> testFuzzHeap [
 
