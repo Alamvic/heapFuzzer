@@ -21,10 +21,9 @@ HeapFuzzing class >> stonAllInstVarNames [
 	^ self allInstVarNames copyWithout: 'heap'
 ]
 
-{ #category : #adding }
+{ #category : #executing }
 HeapFuzzing >> addAllocation: aHFAllocationEvent [
 
-	aHFAllocationEvent id: allocations size + 1.
 	allocations add: aHFAllocationEvent.
 	^ aHFAllocationEvent
 ]
@@ -37,7 +36,7 @@ HeapFuzzing >> addEvent: anEvent [
 	^ anEvent.
 ]
 
-{ #category : #configuring }
+{ #category : #executing }
 HeapFuzzing >> addRoot: anOop [
 
 	| nextLink |
@@ -54,7 +53,7 @@ HeapFuzzing >> addRoot: anOop [
 	heap keepObjectInVMVariable1: nextLink
 ]
 
-{ #category : #fuzzing }
+{ #category : #executing }
 HeapFuzzing >> basicExecute [
 
 	self setUp.
@@ -69,13 +68,13 @@ HeapFuzzing >> basicExecute [
 	self tearDown
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #accessing }
 HeapFuzzing >> buildEvent: aFuzzer [
 
 	^ self addEvent: (aFuzzer newEventFor: self).
 ]
 
-{ #category : #building }
+{ #category : #executing }
 HeapFuzzing >> classWithFormat: format fixedSlots: fixedSlots [ 
 	
 	| classPerSizeCache |
@@ -118,7 +117,7 @@ HeapFuzzing >> events: aCollection [
 	events := aCollection
 ]
 
-{ #category : #fuzzing }
+{ #category : #executing }
 HeapFuzzing >> execute [
 
 	"Restart the heap"
@@ -177,7 +176,7 @@ HeapFuzzing >> printOn: aStream [
 		print: result
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #accessing }
 HeapFuzzing >> randomAllocationEvent [
 
 	"return nil if none.
@@ -202,7 +201,7 @@ HeapFuzzing >> reduce [
 	^ reducedCopy
 ]
 
-{ #category : #reduction }
+{ #category : #reducing }
 HeapFuzzing >> reduceBetween: index1 and: index2 [
 	
 	"Cut by half, if reproduced => ok.
@@ -287,7 +286,7 @@ HeapFuzzing >> setUp [
 	self prepareHeap
 ]
 
-{ #category : #fuzzing }
+{ #category : #executing }
 HeapFuzzing >> tearDown [
 
 	^ events do: #reset
