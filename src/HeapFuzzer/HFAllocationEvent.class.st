@@ -101,7 +101,7 @@ HFAllocationEvent >> executeOn: aVMHeapFuzzer [
 		with: aVMHeapFuzzer heap memory nilObject.
 	isRoot ifTrue: [ aVMHeapFuzzer addRoot: oop ].
 	hash := aVMHeapFuzzer heap memory hashBitsOf: oop.
-	aVMHeapFuzzer addAllocation: self.
+	aVMHeapFuzzer addLiveObject: self.
 ]
 
 { #category : #accessing }

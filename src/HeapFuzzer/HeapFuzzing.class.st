@@ -3,13 +3,13 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'heap',
-		'allocations',
 		'events',
 		'classCache',
 		'count',
 		'timestamp',
 		'deadObjects',
-		'result'
+		'result',
+		'liveObjects'
 	],
 	#category : #HeapFuzzer
 }
@@ -21,19 +21,19 @@ HeapFuzzing class >> stonAllInstVarNames [
 	^ self allInstVarNames copyWithout: 'heap'
 ]
 
-{ #category : #executing }
-HeapFuzzing >> addAllocation: aHFAllocationEvent [
-
-	allocations add: aHFAllocationEvent.
-	^ aHFAllocationEvent
-]
-
 { #category : #accessing }
 HeapFuzzing >> addEvent: anEvent [
 
 	events add: anEvent.
-	anEvent isAllocation ifTrue: [ allocations add: anEvent ].
+	anEvent isAllocation ifTrue: [ anEvent id: events size ].
 	^ anEvent.
+]
+
+{ #category : #executing }
+HeapFuzzing >> addLiveObject: aHFAllocationEvent [
+
+	liveObjects add: aHFAllocationEvent.
+	^ aHFAllocationEvent
 ]
 
 { #category : #executing }
@@ -142,7 +142,7 @@ HeapFuzzing >> heap [
 HeapFuzzing >> initialize [
 
 	super initialize.
-	allocations := OrderedCollection new.
+	liveObjects := OrderedCollection new.
 	events := OrderedCollection new.
 	timestamp := DateAndTime now.
 	deadObjects := OrderedCollection new.
@@ -270,11 +270,11 @@ HeapFuzzing >> remapObjects [
 	
 	self relocateClassesWith: relocationMap.
 	toKill := OrderedCollection new.
-	allocations do: [ :allocation | 
+	liveObjects do: [ :allocation | 
 		allocation remapObjectOn: relocationMap.
 		allocation oop ifNil: [ toKill add: allocation ] ].
 	toKill do: [ :allocation | 
-		allocations remove: allocation.
+		liveObjects remove: allocation.
 		deadObjects add: allocation. ].
 ]
 
