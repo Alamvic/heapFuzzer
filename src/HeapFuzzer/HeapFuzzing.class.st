@@ -8,7 +8,8 @@ Class {
 		'classCache',
 		'count',
 		'timestamp',
-		'deadObjects'
+		'deadObjects',
+		'result'
 	],
 	#category : #HeapFuzzer
 }
@@ -125,12 +126,12 @@ HeapFuzzing >> execute [
 	[ self basicExecute ]
 		on: Error , Halt
 		do: [ :error | 
-			^ HeapFuzzingError new
+			^ result := HeapFuzzingError new
 				  iterations: count;
 				  error: error freeze;
 				  fuzzing: self;
 				  yourself ].
-	^ HeapFuzzingSuccess new
+	^ result := HeapFuzzingSuccess new
 ]
 
 { #category : #accessing }
@@ -160,6 +161,20 @@ HeapFuzzing >> prepareHeap [
 	heap := VMHeapFuzzer new.
 	heap setUp.
 	heap memory setCheckForLeaks: 31 "all"
+]
+
+{ #category : #printing }
+HeapFuzzing >> printOn: aStream [
+
+	"Append a sequence of characters to aStream that identify the receiver."
+
+	super printOn: aStream.
+	aStream
+		nextPutAll: ' events: ';
+		print: events size.
+	aStream
+		nextPutAll: ' result: ';
+		print: result
 ]
 
 { #category : #'as yet unclassified' }
