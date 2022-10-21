@@ -5,6 +5,28 @@ Class {
 }
 
 { #category : #tests }
+HFFuzzerTest >> testEventGeneration [
+
+	| fuzzer fuzzing |
+	fuzzer := HeapFuzzer forCompaction.
+	fuzzer := HeapFuzzer fullRandom.
+	fuzzing := HeapFuzzing new.
+
+	100 timesRepeat: [ fuzzing buildEvent: fuzzer ].
+	self assert: fuzzing events size equals: 100. 
+]
+
+{ #category : #tests }
+HFFuzzerTest >> testFuzzFor [
+
+	| fuzzer res |
+	fuzzer := HeapFuzzer new.
+	fuzzer addEventBuilder: HFNopEvent.
+	res := fuzzer fuzzFor: 1 milliSecond.
+	self assert: res isError not.
+]
+
+{ #category : #tests }
 HFFuzzerTest >> testNewCollectedObjectIsDead [
 
 	| fuzzer allocation |
