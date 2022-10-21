@@ -1,6 +1,6 @@
 Class {
 	#name : #HFNopEvent,
-	#superclass : #Object,
+	#superclass : #HFEvent,
 	#category : #HeapFuzzer
 }
 
@@ -8,16 +8,4 @@ Class {
 HFNopEvent >> executeOn: aVMHeapFuzzer [ 
 	
 	"Nothing!"
-]
-
-{ #category : #testing }
-HFNopEvent >> isAllocation [
-	
-	^ false
-]
-
-{ #category : #resetting }
-HFNopEvent >> reset [
-	
-	"Nothing"
 ]

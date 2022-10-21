@@ -1,6 +1,6 @@
 Class {
 	#name : #HFMutatorEvent,
-	#superclass : #Object,
+	#superclass : #HFEvent,
 	#instVars : [
 		'referer',
 		'referee',
@@ -62,12 +62,6 @@ HFMutatorEvent >> index [
 HFMutatorEvent >> index: anObject [
 
 	index := anObject
-]
-
-{ #category : #testing }
-HFMutatorEvent >> isAllocation [
-	
-	^ false
 ]
 
 { #category : #printing }
