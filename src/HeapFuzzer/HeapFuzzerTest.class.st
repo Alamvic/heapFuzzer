@@ -1,11 +1,24 @@
 Class {
-	#name : #HFFuzzerTest,
+	#name : #HeapFuzzerTest,
 	#superclass : #TestCase,
 	#category : #HeapFuzzer
 }
 
+{ #category : #test }
+HeapFuzzerTest >> testAddEventBuilder [
+
+	| fuzzer |
+	fuzzer := HeapFuzzer new.
+	self assert: fuzzer eventBuilders isEmpty.
+	fuzzer addEventBuilder: HFNopEvent.
+	self assert: fuzzer eventBuilders size equals: 1.
+	fuzzer addEventBuilder: HFNopEvent frequency: 10.
+	self assert: fuzzer eventBuilders size equals: 11.
+
+]
+
 { #category : #tests }
-HFFuzzerTest >> testEventGeneration [
+HeapFuzzerTest >> testEventGeneration [
 
 	| fuzzer fuzzing |
 	fuzzer := HeapFuzzer forCompaction.
@@ -17,7 +30,7 @@ HFFuzzerTest >> testEventGeneration [
 ]
 
 { #category : #tests }
-HFFuzzerTest >> testFuzzFor [
+HeapFuzzerTest >> testFuzzFor [
 
 	| fuzzer res |
 	fuzzer := HeapFuzzer new.
@@ -27,7 +40,7 @@ HFFuzzerTest >> testFuzzFor [
 ]
 
 { #category : #tests }
-HFFuzzerTest >> testNewCollectedObjectIsDead [
+HeapFuzzerTest >> testNewCollectedObjectIsDead [
 
 	| fuzzer allocation |
 	fuzzer := HeapFuzzing new.
@@ -44,8 +57,26 @@ HFFuzzerTest >> testNewCollectedObjectIsDead [
 	self deny: (allocation isMaybeAliveIn: fuzzer) 
 ]
 
+{ #category : #test }
+HeapFuzzerTest >> testNewEventFor [
+
+	| fuzzer fuzzing event |
+	fuzzer := HeapFuzzer new.
+	fuzzing := HeapFuzzing new.
+	fuzzer addEventBuilder: HFNopEvent.
+	
+	event := fuzzer newEventFor: fuzzing.
+	self assert: event class equals: HFNopEvent.
+	self assert: fuzzing events isEmpty.
+	
+	event := fuzzing buildEvent: fuzzer.
+	self assert: event class equals: HFNopEvent.
+	self assert: fuzzing events size equals: 1.
+
+]
+
 { #category : #tests }
-HFFuzzerTest >> testOldCollectedObjectIsDead [
+HeapFuzzerTest >> testOldCollectedObjectIsDead [
 
 	| fuzzer allocation |
 	fuzzer := HeapFuzzing new.
