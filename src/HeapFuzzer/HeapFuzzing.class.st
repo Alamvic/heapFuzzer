@@ -21,16 +21,19 @@ HeapFuzzing class >> stonAllInstVarNames [
 ]
 
 { #category : #adding }
-HeapFuzzing >> addAllocation: aHFAllocationEvent [ 
-	
-	allocations add: aHFAllocationEvent
+HeapFuzzing >> addAllocation: aHFAllocationEvent [
+
+	aHFAllocationEvent id: allocations size + 1.
+	allocations add: aHFAllocationEvent.
+	^ aHFAllocationEvent
 ]
 
 { #category : #accessing }
 HeapFuzzing >> addEvent: anEvent [
 
 	events add: anEvent.
-	anEvent isAllocation ifTrue: [ allocations add: anEvent ]
+	anEvent isAllocation ifTrue: [ allocations add: anEvent ].
+	^ anEvent.
 ]
 
 { #category : #configuring }
@@ -69,6 +72,12 @@ HeapFuzzing >> basicExecute [
 		displayingProgress: [ :iteration | 
 		'Fuzzing Event ' , iteration asString ].
 	self tearDown
+]
+
+{ #category : #'as yet unclassified' }
+HeapFuzzing >> buildEvent: aFuzzer [
+
+	^ self addEvent: (aFuzzer newEventFor: self).
 ]
 
 { #category : #building }
