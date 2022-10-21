@@ -37,7 +37,6 @@ HFFuzzerTest >> testNewCollectedObjectIsDead [
 		isNew: true;
 		isRoot: false;
 		yourself.
-	fuzzer addAllocation: allocation.
 	fuzzer addEvent: allocation.
 	fuzzer addEvent: HFNewSpaceCollectionEvent new.
 	fuzzer basicExecute.
@@ -56,7 +55,6 @@ HFFuzzerTest >> testOldCollectedObjectIsDead [
 		isNew: false;
 		isRoot: false;
 		yourself.
-	fuzzer addAllocation: allocation.
 	fuzzer addEvent: allocation.
 	fuzzer addEvent: HFOldSpaceCollectionEvent new.
 	fuzzer basicExecute.

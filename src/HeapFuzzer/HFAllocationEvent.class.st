@@ -14,7 +14,7 @@ Class {
 { #category : #building }
 HFAllocationEvent class >> buildEventOn: aHeapFuzzer [ 
 	
-	^ aHeapFuzzer addAllocation: self newRandom
+	^ self newRandom
 ]
 
 { #category : #helpers }

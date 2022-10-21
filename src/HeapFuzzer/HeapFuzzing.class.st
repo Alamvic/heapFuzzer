@@ -53,12 +53,6 @@ HeapFuzzing >> addRoot: anOop [
 	heap keepObjectInVMVariable1: nextLink
 ]
 
-{ #category : #accessing }
-HeapFuzzing >> allocations [
-	
-	^ allocations
-]
-
 { #category : #fuzzing }
 HeapFuzzing >> basicExecute [
 
@@ -166,6 +160,18 @@ HeapFuzzing >> prepareHeap [
 	heap := VMHeapFuzzer new.
 	heap setUp.
 	heap memory setCheckForLeaks: 31 "all"
+]
+
+{ #category : #'as yet unclassified' }
+HeapFuzzing >> randomAllocationEvent [
+
+	"return nil if none.
+Is used by builders for events based on other events"
+
+	| allocs |
+	allocs := events select: [ :e | e isAllocation ].
+	allocs ifEmpty: [ ^ nil ].
+	^ allocs atRandom
 ]
 
 { #category : #reducing }

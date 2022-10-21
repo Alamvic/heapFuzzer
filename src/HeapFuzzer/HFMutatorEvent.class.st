@@ -13,10 +13,10 @@ Class {
 HFMutatorEvent class >> buildEventOn: aHeapFuzzer [ 
 	
 	| object1 object2 |
-	aHeapFuzzer allocations ifEmpty: [ ^ HFNopEvent new ].
 	
-	object1 := aHeapFuzzer allocations atRandom.
-	object2 := aHeapFuzzer allocations atRandom.
+	object1 := aHeapFuzzer randomAllocationEvent.
+	object1 ifNil: [ ^ HFNopEvent new ].
+	object2 := aHeapFuzzer randomAllocationEvent.
 	
 	object1 numberOfSlots <= 0 ifTrue: [ ^ HFNopEvent new ].
 	

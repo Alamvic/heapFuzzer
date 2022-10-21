@@ -11,9 +11,9 @@ Class {
 HFPinObjectEvent class >> buildEventOn: aHeapFuzzer [
 
 	| object |
-	aHeapFuzzer allocations ifEmpty: [ ^ HFNopEvent new ].
 
-	object := aHeapFuzzer allocations atRandom.
+	object := aHeapFuzzer randomAllocationEvent.
+	object ifNil: [ ^ HFNopEvent new ].
 
 	^ self new
 		  allocation: object;
