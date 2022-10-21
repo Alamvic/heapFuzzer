@@ -37,7 +37,7 @@ HFAllocationEventBuilder >> allocationSpaces: anObject [
 { #category : #building }
 HFAllocationEventBuilder >> buildEventOn: aHeapFuzzer [ 
 	
-	^ aHeapFuzzer addAllocation: self newRandom
+	^ self newRandom
 ]
 
 { #category : #building }

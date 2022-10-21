@@ -4,6 +4,12 @@ Class {
 	#category : #HeapFuzzer
 }
 
+{ #category : #building }
+HFEvent class >> buildEventOn: aHeapFuzzer [ 
+	
+	^ self new
+]
+
 { #category : #executing }
 HFEvent >> executeOn: aFuzzing [
 
