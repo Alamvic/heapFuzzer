@@ -46,6 +46,60 @@ HeapFuzzingTest >> testExecutePoison [
 	self assert: result isError
 ]
 
+{ #category : #tests }
+HeapFuzzingTest >> testNewCollectedObjectIsDead [
+
+	| fuzzer allocation |
+	fuzzer := HeapFuzzing new.
+	allocation := HFAllocationEvent new
+		objectType: #ephemeron;
+		objectSize: 2;
+		isNew: true;
+		isRoot: false;
+		yourself.
+	fuzzer addEvent: allocation.
+	fuzzer addEvent: HFNewSpaceCollectionEvent new.
+	fuzzer basicExecute.
+	
+	self deny: (allocation isMaybeAliveIn: fuzzer) 
+]
+
+{ #category : #test }
+HeapFuzzingTest >> testNewEventFor [
+
+	| fuzzer fuzzing event |
+	fuzzer := HeapFuzzer new.
+	fuzzing := HeapFuzzing new.
+	fuzzer addEventBuilder: HFNopEvent.
+	
+	event := fuzzer newEventFor: fuzzing.
+	self assert: event class equals: HFNopEvent.
+	self assert: fuzzing events isEmpty.
+	
+	event := fuzzing buildEvent: fuzzer.
+	self assert: event class equals: HFNopEvent.
+	self assert: fuzzing events size equals: 1.
+
+]
+
+{ #category : #tests }
+HeapFuzzingTest >> testOldCollectedObjectIsLive [
+
+	| fuzzer allocation |
+	fuzzer := HeapFuzzing new.
+	allocation := HFAllocationEvent new
+		objectType: #ephemeron;
+		objectSize: 2;
+		isNew: false;
+		isRoot: true;
+		yourself.
+	fuzzer addEvent: allocation.
+	fuzzer addEvent: HFOldSpaceCollectionEvent new.
+	fuzzer basicExecute.
+	
+	self assert: (allocation isMaybeAliveIn: fuzzer) 
+]
+
 { #category : #test }
 HeapFuzzingTest >> testRandomAllocationEvent [
 
