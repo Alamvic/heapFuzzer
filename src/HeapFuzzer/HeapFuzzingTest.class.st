@@ -46,6 +46,43 @@ HeapFuzzingTest >> testExecutePoison [
 	self assert: result isError
 ]
 
+{ #category : #test }
+HeapFuzzingTest >> testExecuteRemap [
+
+	| fuzzing obj1 obj2 obj3 result |
+	fuzzing := HeapFuzzing new.
+	obj1 := fuzzing addEvent: (HFAllocationEvent new
+		objectType: #array;
+		objectSize: 50;
+		isNew: false;
+		isRoot: false;
+		yourself).
+	obj2 := fuzzing addEvent: (HFAllocationEvent new
+		objectType: #array;
+		objectSize: 50;
+		isNew: false;
+		isRoot: true;
+		yourself).
+	obj3 := fuzzing addEvent: (HFAllocationEvent new
+		objectType: #array;
+		objectSize: 50;
+		isNew: false;
+		isRoot: true;
+		yourself).
+	fuzzing addEvent: (HFAggressiveOldSpaceCollectionEvent new).
+	fuzzing addEvent: (HFMutatorEvent new
+		referer: obj3;
+		referee: obj2;
+		index: 25;
+		yourself).
+	fuzzing addEvent: (HFAggressiveOldSpaceCollectionEvent new).
+	result := fuzzing basicExecute.
+	
+	self deny:   (obj1 isMaybeAliveIn: fuzzing).
+	self assert: (obj2 isMaybeAliveIn: fuzzing).
+	self assert: (obj3 isMaybeAliveIn: fuzzing).
+]
+
 { #category : #tests }
 HeapFuzzingTest >> testNewCollectedObjectIsDead [
 
@@ -64,6 +101,24 @@ HeapFuzzingTest >> testNewCollectedObjectIsDead [
 	self deny: (allocation isMaybeAliveIn: fuzzer) 
 ]
 
+{ #category : #tests }
+HeapFuzzingTest >> testNewCollectedObjectIsLive [
+
+	| fuzzer allocation |
+	fuzzer := HeapFuzzing new.
+	allocation := HFAllocationEvent new
+		objectType: #ephemeron;
+		objectSize: 2;
+		isNew: true;
+		isRoot: true;
+		yourself.
+	fuzzer addEvent: allocation.
+	fuzzer addEvent: HFNewSpaceCollectionEvent new.
+	fuzzer basicExecute.
+	
+	self assert: (allocation isMaybeAliveIn: fuzzer) 
+]
+
 { #category : #test }
 HeapFuzzingTest >> testNewEventFor [
 
@@ -80,6 +135,24 @@ HeapFuzzingTest >> testNewEventFor [
 	self assert: event class equals: HFNopEvent.
 	self assert: fuzzing events size equals: 1.
 
+]
+
+{ #category : #tests }
+HeapFuzzingTest >> testOldCollectedObjectIsDead [
+
+	| fuzzer allocation |
+	fuzzer := HeapFuzzing new.
+	allocation := HFAllocationEvent new
+		objectType: #ephemeron;
+		objectSize: 2;
+		isNew: false;
+		isRoot: false;
+		yourself.
+	fuzzer addEvent: allocation.
+	fuzzer addEvent: HFOldSpaceCollectionEvent new.
+	fuzzer basicExecute.
+	
+	self deny: (allocation isMaybeAliveIn: fuzzer) 
 ]
 
 { #category : #tests }
