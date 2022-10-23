@@ -283,11 +283,14 @@ HeapFuzzing >> setUp [
 
 	classCache := nil.
 	count := 0.
+	liveObjects removeAll.
+	deadObjects removeAll.
+	events do: #reset.
 	self prepareHeap
 ]
 
 { #category : #executing }
 HeapFuzzing >> tearDown [
 
-	^ events do: #reset
+	"Do nothing as information loss makes tests harder"
 ]
