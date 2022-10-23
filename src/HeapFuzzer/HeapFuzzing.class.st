@@ -53,6 +53,18 @@ HeapFuzzing >> addRoot: anOop [
 	heap keepObjectInVMVariable1: nextLink
 ]
 
+{ #category : #accessing }
+HeapFuzzing >> append: otherFuzzing [
+
+	"Add a copy of all events of otherFuzzing to self"
+
+	| otherEvents size |
+	otherEvents := otherFuzzing events veryDeepCopy.
+	size := events size.
+	otherEvents doWithIndex: [ :e :idx | e isAllocation ifTrue: [ e id: size + idx ] ].
+	self events addAll: otherEvents. 
+]
+
 { #category : #executing }
 HeapFuzzing >> basicExecute [
 

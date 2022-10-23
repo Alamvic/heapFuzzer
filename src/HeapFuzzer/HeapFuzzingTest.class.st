@@ -8,6 +8,57 @@ Class {
 }
 
 { #category : #test }
+HeapFuzzingTest >> testAppend [
+
+	| fuzzing1 fuzzing2 nop obj mut |
+	fuzzing1 := HeapFuzzing new.
+	nop := fuzzing1 addEvent: HFNopEvent new.
+
+	fuzzing2 := HeapFuzzing new.
+	obj := fuzzing2 addEvent: (HFAllocationEvent new).
+	fuzzing2 addEvent: (HFMutatorEvent new referer: obj; referee: obj).
+	
+	fuzzing1 append: fuzzing2.
+	
+	obj := fuzzing1 events at: 2.
+	mut := fuzzing1 events at: 3.
+	
+	self assert: fuzzing1 events size equals: 3.
+
+	self assert: (fuzzing1 events at: 1) equals: nop.
+	self assert: mut referer equals: obj.
+	self assert: mut referee equals: obj.
+
+]
+
+{ #category : #test }
+HeapFuzzingTest >> testAppendSelf [
+
+	| fuzzing obj1 mut1 obj2 mut2 |
+	fuzzing := HeapFuzzing new.
+	obj1 := fuzzing addEvent: (HFAllocationEvent new).
+	mut1 := fuzzing addEvent: (HFMutatorEvent new referer: obj1; referee: obj1).
+	
+	fuzzing append: fuzzing.
+	
+	obj2 := fuzzing events at: 3.
+	mut2 := fuzzing events at: 4.
+	
+	self assert: fuzzing events size equals: 4.
+
+	self assert: (fuzzing events at: 1) equals: obj1.
+	self assert: (fuzzing events at: 2) equals: mut1.
+	self deny:   (fuzzing events at: 1) equals: obj2.
+	self deny:   (fuzzing events at: 2) equals: mut2.
+
+	self assert: mut1 referer equals: obj1.
+	self assert: mut1 referee equals: obj1.
+	self assert: mut2 referer equals: obj2.
+	self assert: mut2 referee equals: obj2.
+
+]
+
+{ #category : #test }
 HeapFuzzingTest >> testExecute [
 
 	| fuzzing result |
