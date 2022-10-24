@@ -7,6 +7,29 @@ Class {
 	#category : #HeapFuzzer
 }
 
+{ #category : #factory }
+HeapFuzzingTest >> fuzzingWithEvents: events [
+
+	| fuzzing |
+	fuzzing := HeapFuzzing new.
+	events do: [ :event | fuzzing addEvent: event ].
+	^ fuzzing
+]
+
+{ #category : #factory }
+HeapFuzzingTest >> pinNilErrorEvent [
+
+	^ HFMockEvent newExecuting: [ :fuzzer | "Throw error in the VM context" 
+		  fuzzer heap memory pinObject: nil ]
+]
+
+{ #category : #factory }
+HeapFuzzingTest >> storePointerNilErrorEvent [
+
+	^ HFMockEvent newExecuting: [ :fuzzer | "Throw error in the VM context" 
+		  fuzzer heap memory storePointer: nil ofObject: nil withValue: nil ]
+]
+
 { #category : #test }
 HeapFuzzingTest >> testAppend [
 
@@ -81,6 +104,16 @@ HeapFuzzingTest >> testExecuteEmpty [
 	result := fuzzing execute.
 	
 	self assert: result isError not
+]
+
+{ #category : #tests }
+HeapFuzzingTest >> testExecuteLabel [
+
+	| fuzzing result |
+	fuzzing := self fuzzingWithEvents: { self storePointerNilErrorEvent }.
+	result := fuzzing execute.
+
+	self assert: result label equals: 'long64At:<longAt:<isForwarded:<storePointer:ofObject:withValue:'
 ]
 
 { #category : #test }
@@ -238,19 +271,48 @@ HeapFuzzingTest >> testRandomAllocationEvent [
 	self assert: fuzzing randomAllocationEvent equals: evt.
 ]
 
-{ #category : #test }
-HeapFuzzingTest >> testReduce [
+{ #category : #tests }
+HeapFuzzingTest >> testReduceEventsToError [
 
-	| fuzzing reduced poison |
-	fuzzing := HeapFuzzing new.
-	fuzzing addEvent: HFNopEvent new.
-	fuzzing addEvent: HFNopEvent new.
-	poison := fuzzing addEvent: HFPoisonEvent new.
-	fuzzing addEvent: HFNopEvent new.
-	fuzzing addEvent: HFNopEvent new.
-	fuzzing execute.
-	reduced := fuzzing reduce.
-	
-	self assert: reduced fuzzing events size equals: 1.
-	self assert: reduced fuzzing events first equals: poison.
+	| fuzzing result reducedFuzzer |
+	fuzzing := self fuzzingWithEvents: { 
+			           HFNopEvent new.
+			           HFNopEvent new.
+			           self storePointerNilErrorEvent.
+			           HFNopEvent new.
+			           HFNopEvent new }.
+	result := fuzzing execute.
+	reducedFuzzer := result reduce.
+
+	self assert: reducedFuzzer events size equals: 1.
+	self assert: reducedFuzzer execute isError
+]
+
+{ #category : #tests }
+HeapFuzzingTest >> testReduceEventsToHitFirstError [
+
+	| fuzzing result reducedFuzzer |
+	fuzzing := self fuzzingWithEvents: { 
+			           self storePointerNilErrorEvent.
+			           self pinNilErrorEvent }.
+	result := fuzzing execute.
+	reducedFuzzer := result reduce.
+
+
+	self assert: reducedFuzzer events size equals: 1.
+	self assert: (reducedFuzzer execute label includesSubstring: 'storePointer:ofObject:withValue:')
+]
+
+{ #category : #tests }
+HeapFuzzingTest >> testReduceEventsToSameError [
+
+	| fuzzing result reducedFuzzer |
+	fuzzing := self fuzzingWithEvents: { 
+			           self storePointerNilErrorEvent.
+			           self storePointerNilErrorEvent.
+			           self storePointerNilErrorEvent }.
+	result := fuzzing execute.
+	reducedFuzzer := result reduce.
+
+	self assert: reducedFuzzer events size equals: 1
 ]
