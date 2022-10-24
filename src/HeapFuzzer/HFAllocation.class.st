@@ -1,6 +1,6 @@
 Class {
 	#name : #HFAllocation,
-	#superclass : #Object,
+	#superclass : #HFEvent,
 	#instVars : [
 		'oop',
 		'hash'

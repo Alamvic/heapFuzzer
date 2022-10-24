@@ -4,7 +4,6 @@ Class {
 	#instVars : [
 		'numberOfEvents',
 		'eventBuilders',
-		'allocations',
 		'timeout',
 		'eventsSize',
 		'startTime'
@@ -67,14 +66,6 @@ HeapFuzzer class >> fullRandom [
 		  yourself
 ]
 
-{ #category : #fuzzing }
-HeapFuzzer >> addAllocation: aHFAllocationEvent [ 
-	
-	allocations add: aHFAllocationEvent.
-	aHFAllocationEvent id: allocations size.
-	^ aHFAllocationEvent
-]
-
 { #category : #accessing }
 HeapFuzzer >> addEventBuilder: event [
 
@@ -85,12 +76,6 @@ HeapFuzzer >> addEventBuilder: event [
 HeapFuzzer >> addEventBuilder: event frequency: aFrequency [
 
 	aFrequency timesRepeat: [ eventBuilders add: event ]
-]
-
-{ #category : #fuzzing }
-HeapFuzzer >> allocations [
-
-	^ allocations
 ]
 
 { #category : #fuzzing }
@@ -126,8 +111,7 @@ HeapFuzzer >> fuzz [
 	fuzzing setUp.
 	[ self atEnd ] whileFalse: [ 
 		| event |
-		event := self newHeapEvent.
-		fuzzing addEvent: event.
+		event := fuzzing buildEvent: self.
 		event executeOn: fuzzing ].
 	fuzzing tearDown ]
 		on: Error
@@ -166,15 +150,13 @@ HeapFuzzer >> initialize [
 		           yourself.
 	eventsSize := 0.
 	startTime := DateAndTime now.
-	allocations := OrderedCollection new.
 	eventBuilders := OrderedCollection new
 ]
 
-{ #category : #fuzzing }
-HeapFuzzer >> newHeapEvent [
+{ #category : #'instance creation' }
+HeapFuzzer >> newEventFor: aHeapFuzzing [ 
 	
-	eventsSize := eventsSize + 1.
-	^ self eventBuilders atRandom buildEventOn: self
+	^ self eventBuilders atRandom buildEventOn: aHeapFuzzing
 ]
 
 { #category : #accessing }

@@ -1,6 +1,6 @@
 Class {
 	#name : #HFPinObjectEvent,
-	#superclass : #Object,
+	#superclass : #HFEvent,
 	#instVars : [
 		'allocation'
 	],
@@ -11,9 +11,9 @@ Class {
 HFPinObjectEvent class >> buildEventOn: aHeapFuzzer [
 
 	| object |
-	aHeapFuzzer allocations ifEmpty: [ ^ HFNopEvent new ].
 
-	object := aHeapFuzzer allocations atRandom.
+	object := aHeapFuzzer randomAllocationEvent.
+	object ifNil: [ ^ HFNopEvent new ].
 
 	^ self new
 		  allocation: object;
@@ -49,16 +49,4 @@ HFPinObjectEvent >> executeOn: aHeapFuzzer [
 	aHeapFuzzer heap memory pinObject: allocation oop.
 	(aHeapFuzzer heap memory isForwarded: allocation oop) ifTrue: [
 		allocation oop: (aHeapFuzzer heap memory followForwarded: allocation oop) ]
-]
-
-{ #category : #testing }
-HFPinObjectEvent >> isAllocation [
-	
-	^ false
-]
-
-{ #category : #resetting }
-HFPinObjectEvent >> reset [
-	
-	"Nothing"
 ]

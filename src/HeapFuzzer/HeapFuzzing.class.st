@@ -3,12 +3,13 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'heap',
-		'allocations',
 		'events',
 		'classCache',
 		'count',
 		'timestamp',
-		'deadObjects'
+		'deadObjects',
+		'result',
+		'liveObjects'
 	],
 	#category : #HeapFuzzer
 }
@@ -24,10 +25,18 @@ HeapFuzzing class >> stonAllInstVarNames [
 HeapFuzzing >> addEvent: anEvent [
 
 	events add: anEvent.
-	anEvent isAllocation ifTrue: [ allocations add: anEvent ]
+	anEvent isAllocation ifTrue: [ anEvent id: events size ].
+	^ anEvent.
 ]
 
-{ #category : #configuring }
+{ #category : #executing }
+HeapFuzzing >> addLiveObject: aHFAllocationEvent [
+
+	liveObjects add: aHFAllocationEvent.
+	^ aHFAllocationEvent
+]
+
+{ #category : #executing }
 HeapFuzzing >> addRoot: anOop [
 
 	| nextLink |
@@ -45,12 +54,18 @@ HeapFuzzing >> addRoot: anOop [
 ]
 
 { #category : #accessing }
-HeapFuzzing >> allocations [
-	
-	^ allocations
+HeapFuzzing >> append: otherFuzzing [
+
+	"Add a copy of all events of otherFuzzing to self"
+
+	| otherEvents size |
+	otherEvents := otherFuzzing events veryDeepCopy.
+	size := events size.
+	otherEvents doWithIndex: [ :e :idx | e isAllocation ifTrue: [ e id: size + idx ] ].
+	self events addAll: otherEvents. 
 ]
 
-{ #category : #fuzzing }
+{ #category : #executing }
 HeapFuzzing >> basicExecute [
 
 	self setUp.
@@ -65,7 +80,13 @@ HeapFuzzing >> basicExecute [
 	self tearDown
 ]
 
-{ #category : #building }
+{ #category : #accessing }
+HeapFuzzing >> buildEvent: aFuzzer [
+
+	^ self addEvent: (aFuzzer newEventFor: self).
+]
+
+{ #category : #executing }
 HeapFuzzing >> classWithFormat: format fixedSlots: fixedSlots [ 
 	
 	| classPerSizeCache |
@@ -105,12 +126,10 @@ HeapFuzzing >> events [
 { #category : #accessing }
 HeapFuzzing >> events: aCollection [ 
 
-	events := aCollection.
-	allocations := events select: [ :e | e isAllocation ].
-	allocations do: #reset.
+	events := aCollection
 ]
 
-{ #category : #fuzzing }
+{ #category : #executing }
 HeapFuzzing >> execute [
 
 	"Restart the heap"
@@ -118,12 +137,12 @@ HeapFuzzing >> execute [
 	[ self basicExecute ]
 		on: Error , Halt
 		do: [ :error | 
-			^ HeapFuzzingError new
+			^ result := HeapFuzzingError new
 				  iterations: count;
 				  error: error freeze;
 				  fuzzing: self;
 				  yourself ].
-	^ HeapFuzzingSuccess new
+	^ result := HeapFuzzingSuccess new
 ]
 
 { #category : #accessing }
@@ -135,7 +154,7 @@ HeapFuzzing >> heap [
 HeapFuzzing >> initialize [
 
 	super initialize.
-	allocations := OrderedCollection new.
+	liveObjects := OrderedCollection new.
 	events := OrderedCollection new.
 	timestamp := DateAndTime now.
 	deadObjects := OrderedCollection new.
@@ -155,6 +174,32 @@ HeapFuzzing >> prepareHeap [
 	heap memory setCheckForLeaks: 31 "all"
 ]
 
+{ #category : #printing }
+HeapFuzzing >> printOn: aStream [
+
+	"Append a sequence of characters to aStream that identify the receiver."
+
+	super printOn: aStream.
+	aStream
+		nextPutAll: ' events: ';
+		print: events size.
+	aStream
+		nextPutAll: ' result: ';
+		print: result
+]
+
+{ #category : #accessing }
+HeapFuzzing >> randomAllocationEvent [
+
+	"return nil if none.
+Is used by builders for events based on other events"
+
+	| allocs |
+	allocs := events select: [ :e | e isAllocation ].
+	allocs ifEmpty: [ ^ nil ].
+	^ allocs atRandom
+]
+
 { #category : #reducing }
 HeapFuzzing >> reduce [
 
@@ -168,14 +213,14 @@ HeapFuzzing >> reduce [
 	^ reducedCopy
 ]
 
-{ #category : #reduction }
+{ #category : #reducing }
 HeapFuzzing >> reduceBetween: index1 and: index2 [
 	
 	"Cut by half, if reproduced => ok.
 	Otherwise, cut the other half, if reproduced => ok.
 	Otherwise, we need to cut differently"
 	
-	| half reducedCopy result |
+	| half result |
 	half := index2 + index1 // 2.
 
 	[ half >= 1 ] whileTrue: [
@@ -237,11 +282,11 @@ HeapFuzzing >> remapObjects [
 	
 	self relocateClassesWith: relocationMap.
 	toKill := OrderedCollection new.
-	allocations do: [ :allocation | 
+	liveObjects do: [ :allocation | 
 		allocation remapObjectOn: relocationMap.
 		allocation oop ifNil: [ toKill add: allocation ] ].
 	toKill do: [ :allocation | 
-		allocations remove: allocation.
+		liveObjects remove: allocation.
 		deadObjects add: allocation. ].
 ]
 
@@ -250,11 +295,14 @@ HeapFuzzing >> setUp [
 
 	classCache := nil.
 	count := 0.
+	liveObjects removeAll.
+	deadObjects removeAll.
+	events do: #reset.
 	self prepareHeap
 ]
 
-{ #category : #fuzzing }
+{ #category : #executing }
 HeapFuzzing >> tearDown [
 
-	^ events do: #reset
+	"Do nothing as information loss makes tests harder"
 ]
