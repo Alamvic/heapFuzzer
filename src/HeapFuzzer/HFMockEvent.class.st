@@ -1,6 +1,6 @@
 Class {
 	#name : #HFMockEvent,
-	#superclass : #Object,
+	#superclass : #HFEvent,
 	#instVars : [
 		'onExecute'
 	],
