@@ -32,6 +32,13 @@ VMHeapFuzzer >> fuzzer: anObject [
 	fuzzer := anObject
 ]
 
+{ #category : #accessing }
+VMHeapFuzzer >> initializationOptions [
+
+	^ super initializationOptions
+	  , { #CloneOnGC. false. #CloneOnScavenge. false }
+]
+
 { #category : #printing }
 VMHeapFuzzer >> printHeapMap [
 	
