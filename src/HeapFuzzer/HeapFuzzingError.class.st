@@ -46,6 +46,13 @@ HeapFuzzingError >> ifError: aFullBlockClosure [
 	^ aFullBlockClosure value
 ]
 
+{ #category : #testing }
+HeapFuzzingError >> initialize [
+
+	super initialize.
+	timestamp := DateAndTime now
+]
+
 { #category : #classification }
 HeapFuzzingError >> interestingContextForException: anException [
 
@@ -56,13 +63,6 @@ HeapFuzzingError >> interestingContextForException: anException [
 			ifTrue: [ ^ context ].
 		context := context sender ].
 	^ nil
-]
-
-{ #category : #testing }
-HeapFuzzingError >> initialize [
-
-	super initialize.
-	timestamp := DateAndTime now
 ]
 
 { #category : #testing }
