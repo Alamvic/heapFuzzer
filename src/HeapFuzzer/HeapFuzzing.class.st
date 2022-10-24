@@ -9,7 +9,11 @@ Class {
 		'timestamp',
 		'deadObjects',
 		'result',
-		'liveObjects'
+		'liveObjects',
+		'collector',
+		'coverage',
+		'chooseCount',
+		'energy'
 	],
 	#category : #HeapFuzzer
 }
@@ -78,6 +82,11 @@ HeapFuzzing >> basicExecute [
 		displayingProgress: [ :iteration | 
 		'Fuzzing Event ' , iteration asString ].
 	self tearDown
+]
+
+{ #category : #'as yet unclassified' }
+HeapFuzzing >> build: anInteger events: aHeapFuzzer [ 
+	anInteger timesRepeat: [ self buildEvent: aHeapFuzzer ]
 ]
 
 { #category : #accessing }
@@ -164,6 +173,12 @@ HeapFuzzing >> initialize [
 HeapFuzzing >> isReducible [
 	
 	^ self events size > 1
+]
+
+{ #category : #'as yet unclassified' }
+HeapFuzzing >> postCopy [
+
+	events := events copy.
 ]
 
 { #category : #preparing }
@@ -288,6 +303,18 @@ HeapFuzzing >> remapObjects [
 	toKill do: [ :allocation | 
 		liveObjects remove: allocation.
 		deadObjects add: allocation. ].
+]
+
+{ #category : #accessing }
+HeapFuzzing >> result [
+
+	^ result
+]
+
+{ #category : #accessing }
+HeapFuzzing >> result: anObject [
+
+	^ result := anObject
 ]
 
 { #category : #preparing }
