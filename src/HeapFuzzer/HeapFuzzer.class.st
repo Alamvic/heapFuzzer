@@ -153,6 +153,19 @@ HeapFuzzer >> initialize [
 	eventBuilders := OrderedCollection new
 ]
 
+{ #category : #'as yet unclassified' }
+HeapFuzzer >> mutate: aFuzzing [
+
+	"Return a mutated copy of a fuzzing"
+
+	| fuzzing nb |
+	fuzzing := aFuzzing copy.
+	
+	nb := (fuzzing events size min: 5) atRandom.
+	fuzzing := fuzzing build: nb events: self.
+	^ fuzzing
+]
+
 { #category : #'instance creation' }
 HeapFuzzer >> newEventFor: aHeapFuzzing [ 
 	
