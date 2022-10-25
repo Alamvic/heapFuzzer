@@ -444,3 +444,15 @@ HeapFuzzing >> tearDown [
 
 	"Do nothing as information loss makes tests harder"
 ]
+
+{ #category : #accessing }
+HeapFuzzing >> timestamp [
+
+	^ timestamp
+]
+
+{ #category : #accessing }
+HeapFuzzing >> timestamp: anObject [
+
+	timestamp := anObject
+]
