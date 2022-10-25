@@ -10,7 +10,6 @@ Class {
 		'deadObjects',
 		'result',
 		'liveObjects',
-		'collector',
 		'coverage',
 		'chooseCount',
 		'effectCount',
@@ -97,6 +96,18 @@ HeapFuzzing >> buildEvent: aFuzzer [
 	^ self addEvent: (aFuzzer newEventFor: self).
 ]
 
+{ #category : #accessing }
+HeapFuzzing >> chooseCount [
+
+	^ chooseCount
+]
+
+{ #category : #accessing }
+HeapFuzzing >> chooseCount: anObject [
+
+	chooseCount := anObject
+]
+
 { #category : #executing }
 HeapFuzzing >> classWithFormat: format fixedSlots: fixedSlots [ 
 	
@@ -126,6 +137,30 @@ HeapFuzzing >> classWithFormat: format fixedSlots: fixedSlots [
 { #category : #accessing }
 HeapFuzzing >> count [
 	^ count
+]
+
+{ #category : #accessing }
+HeapFuzzing >> coverage [
+
+	^ coverage
+]
+
+{ #category : #accessing }
+HeapFuzzing >> coverage: anObject [
+
+	coverage := anObject
+]
+
+{ #category : #accessing }
+HeapFuzzing >> effectCount [
+
+	^ effectCount
+]
+
+{ #category : #accessing }
+HeapFuzzing >> effectCount: anObject [
+
+	effectCount := anObject
 ]
 
 { #category : #accessing }
@@ -160,6 +195,16 @@ HeapFuzzing >> execute [
 	^ result.
 ]
 
+{ #category : #'as yet unclassified' }
+HeapFuzzing >> executeCoverage: collector [
+
+	collector reset.
+	result := collector basicRun: [ self execute ].
+	coverage := collector collectResult.
+	collector reset.
+	^ result
+]
+
 { #category : #accessing }
 HeapFuzzing >> heap [
 	^ heap
@@ -169,6 +214,9 @@ HeapFuzzing >> heap [
 HeapFuzzing >> initialize [
 
 	super initialize.
+	chooseCount := 0.
+	effectCount := 0.
+	
 	liveObjects := OrderedCollection new.
 	events := OrderedCollection new.
 	timestamp := DateAndTime now.
@@ -204,9 +252,16 @@ HeapFuzzing >> printOn: aStream [
 	aStream
 		nextPutAll: ' events: ';
 		print: events size.
-	aStream
-		nextPutAll: ' result: ';
-		print: result
+	result ifNotNil: [ 
+		aStream
+			nextPutAll: ' error: ';
+			print: result isError ].
+	coverage ifNotNil: [ 
+		aStream
+			nextPutAll: ' coverage: ';
+			print: coverage nodes size;
+			nextPutAll: ' score: ';
+			print: self score ]
 ]
 
 { #category : #accessing }
@@ -311,6 +366,17 @@ HeapFuzzing >> remapObjects [
 		deadObjects add: allocation. ].
 ]
 
+{ #category : #preparing }
+HeapFuzzing >> reset [
+
+	classCache := nil.
+	count := 0.
+	liveObjects removeAll.
+	deadObjects removeAll.
+	events do: #reset.
+	heap := nil.
+]
+
 { #category : #accessing }
 HeapFuzzing >> result [
 
@@ -321,6 +387,18 @@ HeapFuzzing >> result [
 HeapFuzzing >> result: anObject [
 
 	^ result := anObject
+]
+
+{ #category : #accessing }
+HeapFuzzing >> score [
+
+	^ score
+]
+
+{ #category : #accessing }
+HeapFuzzing >> score: anObject [
+
+	score := anObject
 ]
 
 { #category : #preparing }
