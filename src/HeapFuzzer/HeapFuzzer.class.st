@@ -171,7 +171,8 @@ HeapFuzzer >> mutate: aFuzzing [
 	"Return a mutated copy of a fuzzing"
 
 	| fuzzing nb |
-	fuzzing := aFuzzing copy.
+	fuzzing := HeapFuzzing new.
+	fuzzing events addAll: aFuzzing events.
 	
 	nb := (fuzzing events size min: 5) atRandom: random.
 	nb timesRepeat: [ self basicMutate: fuzzing ].
