@@ -45,10 +45,15 @@ HeapGrayboxFuzzer >> chooseSeed [
 	| seed |
 	
 	"Recompute the score of all seeds. It is here that most of the graybox magic happens."
-	seeds do: [ :s | 
-		s score: 10.0 * s coverage nodes size - s events size - (coverageCounter at: s coverage nodes) size
-		" + (1.0 / (covers at: s coverage nodes) size) * 1.0"
-		" * ((1 + s effectCount) / (1 + s chooseCount))" ].
+	seeds do: [ :s |
+		| score xscore | "use xscore do disable a line :)"
+		score := 10.0 * s coverage nodes size. "what is uber important is coverage"
+		score := score - s events size. "small bonus for the size."
+		xscore := score - (coverageCounter at: s coverage nodes) size. "Small bonus for rare coverage. Maybe more bugs are lurking in rare path"
+		xscore := (1 + s effectCount) * score / (1 + s chooseCount). "Big bonus for effective seeds"
+		score := score / (coverageCounter at: s coverage nodes) size. "cancel bonus for coverages that have many seeds"
+		score := score raisedTo: 5. "powerscaling"
+		s score: score ].
 
 	"We sort because it is easier to display"
 	seeds sort: [ :a :b | a score > b score ].
@@ -64,12 +69,16 @@ HeapGrayboxFuzzer >> doStep [
 
 	"Get a fuzzing, execute it and uptate information"
 
-	| fuzzing seed |
+	| fuzzing fuzzing2 seed seed2 |
 	"Get a prepared seed, or generate a new fuzzing"
 	seed := nil.
 	fuzzing := seeds detect: [ :x | x result isNil ] ifNone: [ 
 		           seed := self chooseSeed.
-		           fuzzing := self mutate: seed ].
+		           fuzzing := self mutate: seed.
+		           seed2 := self chooseSeed.
+		           fuzzing2 := self mutate: seed2.
+					fuzzing := self combine: fuzzing and: fuzzing2.
+					  fuzzing simplify ].
 
 	"Execute the fuzzing"
 	fuzzing executeCoverage: collector.
