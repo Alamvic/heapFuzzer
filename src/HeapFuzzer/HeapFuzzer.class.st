@@ -92,9 +92,26 @@ HeapFuzzer >> basicMutate: aFuzzing [
 
 	{ 
 		[ aFuzzing buildEvent: self ].
+		[ aFuzzing buildEvent: self ].
 		[ aFuzzing events removeAt: (aFuzzing events size atRandom: random) ].
 		[ aFuzzing events at: (aFuzzing events size atRandom: random) put: (self newEventFor: aFuzzing) ] }
 		atRandom value
+]
+
+{ #category : #'as yet unclassified' }
+HeapFuzzer >> combine: aFuzzing1 and: aFuzzing2 [
+
+	"produce a new fuzzing by conbining two other ones"
+	
+	| result |
+	result := HeapFuzzing new.
+	1 to: (aFuzzing1 events size // 2) do: [ :i |
+		result addEffectiveEvent: (aFuzzing1 events at: i).
+	].
+	(aFuzzing2 events size // 2 max: 1) to: (aFuzzing2 events size) do: [ :i |
+		result addEffectiveEvent: (aFuzzing2 events at: i).
+	].
+	^ result
 ]
 
 { #category : #fuzzing }

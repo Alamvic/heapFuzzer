@@ -26,6 +26,23 @@ HeapFuzzing class >> stonAllInstVarNames [
 	^ self allInstVarNames copyWithout: 'heap'
 ]
 
+{ #category : #adding }
+HeapFuzzing >> addEffectiveEvent: anEvent [
+
+	"Add an event only it is not a nop (implicit or explicit)".
+	
+	anEvent class = HFNopEvent ifTrue: [ ^nil ].
+	anEvent class = HFMutatorEvent ifTrue: [
+		(events includes: anEvent referee) ifFalse: [ ^ nil ]. 
+		(events includes: anEvent referer) ifFalse: [ ^ nil ]. 
+	].
+	anEvent class = HFPinObjectEvent ifTrue: [
+		(events includes: anEvent allocation) ifFalse: [ ^ nil ]. 
+	].
+	
+	^ self addEvent: anEvent.
+]
+
 { #category : #accessing }
 HeapFuzzing >> addEvent: anEvent [
 
@@ -410,6 +427,16 @@ HeapFuzzing >> setUp [
 	deadObjects removeAll.
 	events do: #reset.
 	self prepareHeap
+]
+
+{ #category : #'as yet unclassified' }
+HeapFuzzing >> simplify [
+
+	"Remove nop events (explicit and implicit one)"
+	| oldEvents |
+	oldEvents := events.
+	events := OrderedCollection new.
+	oldEvents do: [ :e | self addEffectiveEvent: e ]
 ]
 
 { #category : #executing }
