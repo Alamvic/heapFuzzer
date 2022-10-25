@@ -6,7 +6,8 @@ Class {
 		'eventBuilders',
 		'timeout',
 		'eventsSize',
-		'startTime'
+		'startTime',
+		'random'
 	],
 	#category : #HeapFuzzer
 }
@@ -84,6 +85,16 @@ HeapFuzzer >> atEnd [
 	^ timeout atEnd: self
 ]
 
+{ #category : #'as yet unclassified' }
+HeapFuzzer >> basicMutate: aFuzzing [
+
+	{ 
+		[ aFuzzing buildEvent: self ].
+		[ aFuzzing events removeAt: (aFuzzing events size atRandom: random) ].
+		[ aFuzzing events at: (aFuzzing events size atRandom: random) put: (self newEventFor: aFuzzing) ] }
+		atRandom value
+]
+
 { #category : #fuzzing }
 HeapFuzzer >> eventBuilders [
 
@@ -145,6 +156,7 @@ HeapFuzzer >> fuzzFor: aDuration [
 HeapFuzzer >> initialize [
 
 	super initialize.
+	random := Random new.
 	timeout := HFIterationsTimeout new
 		           maxIterations: 1000;
 		           yourself.
@@ -161,15 +173,15 @@ HeapFuzzer >> mutate: aFuzzing [
 	| fuzzing nb |
 	fuzzing := aFuzzing copy.
 	
-	nb := (fuzzing events size min: 5) atRandom.
-	fuzzing := fuzzing build: nb events: self.
+	nb := (fuzzing events size min: 5) atRandom: random.
+	nb timesRepeat: [ self basicMutate: fuzzing ].
 	^ fuzzing
 ]
 
 { #category : #'instance creation' }
 HeapFuzzer >> newEventFor: aHeapFuzzing [ 
 	
-	^ self eventBuilders atRandom buildEventOn: aHeapFuzzing
+	^ (self eventBuilders atRandom: random) buildEventOn: aHeapFuzzing
 ]
 
 { #category : #accessing }
