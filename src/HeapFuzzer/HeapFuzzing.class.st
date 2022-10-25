@@ -13,7 +13,9 @@ Class {
 		'collector',
 		'coverage',
 		'chooseCount',
-		'energy'
+		'effectCount',
+		'score',
+		'duration'
 	],
 	#category : #HeapFuzzer
 }
@@ -141,17 +143,21 @@ HeapFuzzing >> events: aCollection [
 { #category : #executing }
 HeapFuzzing >> execute [
 
-	"Restart the heap"
+	| startTime |
 
+	startTime := DateAndTime now.
+	result := nil.
 	[ self basicExecute ]
-		on: Error , Halt
+		on: Error
 		do: [ :error | 
-			^ result := HeapFuzzingError new
+			result := HeapFuzzingError new
 				  iterations: count;
 				  error: error freeze;
 				  fuzzing: self;
 				  yourself ].
-	^ result := HeapFuzzingSuccess new
+	result ifNil: [ result := HeapFuzzingSuccess new ].
+	duration := DateAndTime now - startTime.
+	^ result.
 ]
 
 { #category : #accessing }
