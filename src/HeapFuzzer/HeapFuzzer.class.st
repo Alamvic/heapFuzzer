@@ -88,6 +88,8 @@ HeapFuzzer >> atEnd [
 { #category : #'as yet unclassified' }
 HeapFuzzer >> basicMutate: aFuzzing [
 
+	aFuzzing events ifEmpty: [ ^ aFuzzing buildEvent: self ].
+
 	{ 
 		[ aFuzzing buildEvent: self ].
 		[ aFuzzing events removeAt: (aFuzzing events size atRandom: random) ].
@@ -174,7 +176,7 @@ HeapFuzzer >> mutate: aFuzzing [
 	fuzzing := HeapFuzzing new.
 	fuzzing events addAll: aFuzzing events.
 	
-	nb := (fuzzing events size min: 5) atRandom: random.
+	nb := (fuzzing events size min: 5 max: 1) atRandom: random.
 	nb timesRepeat: [ self basicMutate: fuzzing ].
 	^ fuzzing
 ]
