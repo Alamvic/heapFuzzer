@@ -37,6 +37,33 @@ HeapGrayboxFuzzer >> basicFuzz [
 		n := n * 2 ].
 ]
 
+{ #category : #accessing }
+HeapGrayboxFuzzer >> chart [
+
+| timeline list chart max listmax |
+
+timeline := seeds sorted: [ :a :b | a timestamp < b timestamp ].
+
+list := timeline collect: [ :f| f coverage nodes size ].
+
+max := 0.
+listmax := timeline collect: [ :f | max := f coverage nodes size max: max ].
+
+chart := RSChart new.
+chart add: (RSScatterPlot new
+    x: (1 to: list size)
+    y: list).
+chart add: (RSLinePlot new
+    x: (1 to: listmax size)
+    y: listmax).
+chart add: (RSHorizontalTick new
+    numberOfTicks: 10;
+    useDiagonalLabel;
+    yourself).
+chart add: RSVerticalTick new.
+^ chart
+]
+
 { #category : #'as yet unclassified' }
 HeapGrayboxFuzzer >> chooseSeed [
 
