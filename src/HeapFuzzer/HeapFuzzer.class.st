@@ -103,12 +103,13 @@ HeapFuzzer >> combine: aFuzzing1 and: aFuzzing2 [
 
 	"produce a new fuzzing by conbining two other ones"
 	
-	| result |
+	| result pivot |
+	pivot := random next.
 	result := HeapFuzzing new.
-	1 to: (aFuzzing1 events size // 2) do: [ :i |
+	1 to: (aFuzzing1 events size * pivot) asInteger do: [ :i |
 		result addEffectiveEvent: (aFuzzing1 events at: i).
 	].
-	(aFuzzing2 events size // 2 max: 1) to: (aFuzzing2 events size) do: [ :i |
+	((aFuzzing2 events size * pivot) asInteger max: 1) to: (aFuzzing2 events size) do: [ :i |
 		result addEffectiveEvent: (aFuzzing2 events at: i).
 	].
 	^ result

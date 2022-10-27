@@ -137,6 +137,31 @@ HeapGrayboxFuzzer >> fuzz [
 ]
 
 { #category : #'as yet unclassified' }
+HeapGrayboxFuzzer >> methodOverview [
+
+	| methods all missing |
+	methods := seeds flatCollect: [ :s | s coverage methods collect: [ :m | m name ] ] as: Set.
+	all := collector methods collect: [ :m | m name ] as: Set.
+	missing := all \ methods.
+	
+	methods := methods asArray sort.
+	missing := missing asArray sort.
+	
+	^ { #coveredMethods -> methods.
+		#missingMethods -> missing }
+]
+
+{ #category : #'as yet unclassified' }
+HeapGrayboxFuzzer >> nodesPopularity [
+
+	| result |
+	result := Bag new.
+	seeds do: [ :s |
+		result addAll: s coverage nodes ].
+	^ result.
+]
+
+{ #category : #'as yet unclassified' }
 HeapGrayboxFuzzer >> prepareSeeds [
 
 	"Generate the first seeds"
