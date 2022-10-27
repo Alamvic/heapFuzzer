@@ -28,7 +28,7 @@ HFAllocationEvent class >> newObjectSize [
 { #category : #helpers }
 HFAllocationEvent class >> newObjectType [
 
-	^ { #ephemeron . #array } atRandom
+	^ { #ephemeron . #array . #byteArray. #weakArray } atRandom
 ]
 
 { #category : #'instance creation' }
@@ -78,6 +78,12 @@ HFAllocationEvent >> allocateOld: aVMHeapFuzzer [
 HFAllocationEvent >> arrayFormat: aHeapFuzzing [ 
 	
 	^ aHeapFuzzing heap memory arrayFormat
+]
+
+{ #category : #accessing }
+HFAllocationEvent >> byteArrayFormat: aHeapFuzzing [ 
+	
+	^ aHeapFuzzing heap memory byteFormatForNumBytes: 1
 ]
 
 { #category : #executing }
@@ -183,4 +189,10 @@ HFAllocationEvent >> printOn: aStream [
 		nextPut: $(;
 		print: id;
 		nextPut: $)
+]
+
+{ #category : #accessing }
+HFAllocationEvent >> weakArrayFormat: aHeapFuzzing [ 
+	
+	^ aHeapFuzzing heap memory weakArrayFormat
 ]

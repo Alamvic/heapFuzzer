@@ -61,9 +61,12 @@ HeapFuzzer class >> fullRandom [
 	^ self new
 		  addEventBuilder: HFNewSpaceCollectionEvent frequency: 1;
 		  addEventBuilder: HFOldSpaceCollectionEvent frequency: 1;
+		  addEventBuilder: HFAggressiveOldSpaceCollectionEvent frequency: 1;
 		  addEventBuilder: HFAllocationEvent frequency: 20;
 		  addEventBuilder: HFMutatorEvent frequency: 20;
 		  addEventBuilder: HFPinObjectEvent frequency: 10;
+		  addEventBuilder: HFBecomeEvent frequency: 5;
+		  addEventBuilder: HFUnMutatorEvent frequency: 5;
 		  yourself
 ]
 
