@@ -287,8 +287,17 @@ HeapFuzzing >> randomAllocationEvent [
 	"return nil if none.
 Is used by builders for events based on other events"
 
+	^ self randomEvent: [ :e | e isAllocation ]
+]
+
+{ #category : #'as yet unclassified' }
+HeapFuzzing >> randomEvent: aBlock [
+
+		"return nil if none.
+Is used by builders for events based on other events"
+
 	| allocs |
-	allocs := events select: [ :e | e isAllocation ].
+	allocs := events select: aBlock.
 	allocs ifEmpty: [ ^ nil ].
 	^ allocs atRandom
 ]
