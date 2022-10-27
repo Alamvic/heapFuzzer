@@ -78,8 +78,8 @@ CoverageCollector >> initialize [
 	metalink := MetaLink new
 		            selector: #tagExecuted;
 		            metaObject: #node.
-	methods := Set new.
-	nodes := Set new.
+	methods := IdentitySet new.
+	nodes := IdentitySet new.
 ]
 
 { #category : #actions }
