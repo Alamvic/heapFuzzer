@@ -68,6 +68,22 @@ HFBecomeEvent >> executeOn: aFuzzing [
 	aFuzzing heap memory become: array1 with: array2 twoWay: twoWay copyHash: copyHash.
 ]
 
+{ #category : #printing }
+HFBecomeEvent >> printOn: aStream [
+
+	super printOn: aStream.
+	aStream
+		nextPut: $(;
+		print: referer id;
+		nextPutAll: '-->';
+		print: referee id;
+		nextPutAll: ' twoWay:';
+		print: twoWay;
+		nextPutAll: ' copyHash:';
+		print: copyHash;
+		nextPut: $)
+]
+
 { #category : #accessing }
 HFBecomeEvent >> referee [
 
