@@ -42,8 +42,8 @@ HeapGrayboxFuzzer >> chart [
 
 | timeline list chart max listmax |
 
-timeline := seeds sorted: [ :a :b | a timestamp < b timestamp ].
-
+timeline := seeds select: [ :f | f coverage isNotNil ].
+timeline sort: [ :a :b | a timestamp < b timestamp ].
 list := timeline collect: [ :f| f coverage nodes size ].
 
 max := 0.
