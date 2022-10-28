@@ -200,7 +200,7 @@ HeapFuzzing >> execute [
 	startTime := DateAndTime now.
 	result := nil.
 	[ self basicExecute ]
-		on: Error
+		on: Error, Halt
 		do: [ :error | 
 			result := HeapFuzzingError new
 				  iterations: count;
