@@ -14,11 +14,8 @@ Class {
 HeapGrayboxFuzzer >> basicFuzz [
 
 	| n i |
-	seeds := OrderedCollection new.
-	errors := OrderedCollection new.
-	coverageCounter := Dictionary new.
 
-	self prepareSeeds.
+	seeds ifEmpty: [ self prepareSeeds ].
 	n := 2.
 	i := 1.
 
@@ -134,6 +131,17 @@ HeapGrayboxFuzzer >> fuzz [
 	collector methods: ((#VMMaker asPackage classes select: [:c| 'Spur*' match: c name ]) flatCollect: [:c | c methods]).
 
 	collector installOn: [ self basicFuzz ].
+]
+
+{ #category : #initialization }
+HeapGrayboxFuzzer >> initialize [
+
+	super initialize.
+
+	seeds := OrderedCollection new.
+	errors := OrderedCollection new.
+	coverageCounter := Dictionary new.
+
 ]
 
 { #category : #'as yet unclassified' }
