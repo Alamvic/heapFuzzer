@@ -5,7 +5,8 @@ Class {
 		'collector',
 		'seeds',
 		'errors',
-		'coverageCounter'
+		'coverageCounter',
+		'nodesCounter'
 	],
 	#category : #HeapFuzzer
 }
@@ -68,6 +69,15 @@ HeapGrayboxFuzzer >> chooseSeed [
 
 	| seed |
 	
+	seed := seeds atRandom: random weighting: [ :each | each score ].
+	"seed := seeds at: 1." "Alternative to weighted choice"
+	seed chooseCount: seed chooseCount + 1.
+	^ seed
+]
+
+{ #category : #'as yet unclassified' }
+HeapGrayboxFuzzer >> computeScore [
+
 	"Recompute the score of all seeds. It is here that most of the graybox magic happens."
 	seeds do: [ :s |
 		| score xscore | "use xscore do disable a line :)"
@@ -81,11 +91,6 @@ HeapGrayboxFuzzer >> chooseSeed [
 
 	"We sort because it is easier to display"
 	seeds sort: [ :a :b | a score > b score ].
-
-	seed := seeds atRandom: random weighting: [ :each | each score ].
-	"seed := seeds at: 1." "Alternative to weighted choice"
-	seed chooseCount: seed chooseCount + 1.
-	^ seed
 ]
 
 { #category : #'as yet unclassified' }
@@ -96,7 +101,8 @@ HeapGrayboxFuzzer >> doStep [
 	| fuzzing fuzzing2 seed seed2 |
 	"Get a prepared seed, or generate a new fuzzing"
 	seed := nil.
-	fuzzing := seeds detect: [ :x | x result isNil ] ifNone: [ 
+	fuzzing := seeds detect: [ :x | x result isNil ] ifNone: [
+					  self computeScore.
 		           seed := self chooseSeed.
 		           fuzzing := self mutate: seed.
 		           seed2 := self chooseSeed.
