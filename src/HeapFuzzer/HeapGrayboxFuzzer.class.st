@@ -85,6 +85,7 @@ HeapGrayboxFuzzer >> computeScore [
 		score := score - s events size. "small bonus for the size."
 		xscore := score - (coverageCounter at: s coverage nodes) size. "Small bonus for rare coverage. Maybe more bugs are lurking in rare path"
 		xscore := (1 + s effectCount) * score / (1 + s chooseCount). "Big bonus for effective seeds"
+		score := score * (self nodeScore: s). "Big bonus for rare path taken/not taken"
 		score := score / (coverageCounter at: s coverage nodes) size. "cancel bonus for coverages that have many seeds"
 		score := score raisedTo: 5. "powerscaling"
 		s score: score ].
@@ -123,6 +124,7 @@ HeapGrayboxFuzzer >> doStep [
 	(coverageCounter at: fuzzing coverage nodes ifAbsentPut: [ 
 		 seed ifNotNil: [ seed effectCount: seed effectCount + 1 ].
 		 OrderedCollection new ]) add: fuzzing.
+	nodesCounter addAll: fuzzing coverage nodes.
 
 	^ fuzzing
 ]
@@ -147,7 +149,7 @@ HeapGrayboxFuzzer >> initialize [
 	seeds := OrderedCollection new.
 	errors := OrderedCollection new.
 	coverageCounter := Dictionary new.
-
+	nodesCounter := Bag new.
 ]
 
 { #category : #'as yet unclassified' }
@@ -163,6 +165,32 @@ HeapGrayboxFuzzer >> methodOverview [
 	
 	^ { #coveredMethods -> methods.
 		#missingMethods -> missing }
+]
+
+{ #category : #'as yet unclassified' }
+HeapGrayboxFuzzer >> nodeScore: aFuzzing [
+
+	| result size |
+
+	size := seeds size.
+
+	"This compute the vector distance (on each covered node) between aFuzzing and the average fuzzing.
+	
+		eg. if the average is (0.5, 0.9, 0.1) and aFuzzing hit all 3 node (i.e 1, 1, 1) it gets
+			((0.5-1)squared + (0.9-1)squared + (0.1-1)squared)sqrt = 1.03440804327886
+
+		note: undiscovered nodes behave nicely avg=0 hit=0.
+   "
+
+	result := 0.
+	nodesCounter doWithOccurrences: [ :each :occ |
+		| hitRate itsHit |
+		hitRate := occ / size.
+		itsHit := (aFuzzing coverage nodes includes: each) ifTrue: [ 1 ] ifFalse: [ 0 ].
+		result := result + (hitRate-itsHit) squared.
+	].
+
+	^ result sqrt.
 ]
 
 { #category : #'as yet unclassified' }
@@ -185,4 +213,16 @@ HeapGrayboxFuzzer >> prepareSeeds [
 		fuzzing := HeapFuzzing new.
 		fuzzing build: 1 events: self.
 		seeds add: fuzzing ]
+]
+
+{ #category : #accessing }
+HeapGrayboxFuzzer >> seeds [
+
+	^ seeds
+]
+
+{ #category : #accessing }
+HeapGrayboxFuzzer >> seeds: anObject [
+
+	seeds := anObject
 ]
