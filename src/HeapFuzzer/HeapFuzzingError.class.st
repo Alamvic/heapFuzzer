@@ -114,6 +114,16 @@ HeapFuzzingError >> labelForContext: context [
 		  context sender sender sender selector } joinUsing: '<'
 ]
 
+{ #category : #printing }
+HeapFuzzingError >> printOn: aStream [
+	"Append a sequence of characters to aStream that identify the receiver."
+	super printOn: aStream.
+	aStream nextPutAll: ' error: ';
+		print: error;
+		nextPutAll: ' label: ';
+		print: self label
+]
+
 { #category : #reduction }
 HeapFuzzingError >> reduce [
 	
