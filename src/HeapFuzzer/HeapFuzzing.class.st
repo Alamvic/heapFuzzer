@@ -14,7 +14,8 @@ Class {
 		'chooseCount',
 		'effectCount',
 		'score',
-		'duration'
+		'duration',
+		'lastReduce'
 	],
 	#category : #HeapFuzzer
 }
@@ -312,6 +313,7 @@ HeapFuzzing >> reduce [
 		whileTrue: [ 
 			previousCopy := reducedCopy.
 			reducedCopy := reducedCopy reduceStep ].
+	lastReduce := reducedCopy.
 	^ reducedCopy
 ]
 
