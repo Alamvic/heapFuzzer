@@ -60,8 +60,8 @@ HFBecomeEvent >> executeOn: aFuzzing [
 	((aFuzzing heap memory hashBitsOf: referee oop)
 		= referee objectHash) ifFalse: [ ^ self ].
 
-	array1 := aFuzzing heap newObjectWithSlots: 1.
-	array2 := aFuzzing heap newObjectWithSlots: 1.
+	array1 := aFuzzing heap newArrayWithSlots: 1.
+	array2 := aFuzzing heap newArrayWithSlots: 1.
 	aFuzzing heap memory storePointer: 0 ofObject: array1 withValue: referer oop.
 	aFuzzing heap memory storePointer: 0 ofObject: array2 withValue: referee oop.
 	
@@ -106,6 +106,13 @@ HFBecomeEvent >> referer [
 HFBecomeEvent >> referer: anObject [
 
 	referer := anObject
+]
+
+{ #category : #initialization }
+HFBecomeEvent >> reset [
+
+	referer reset.
+	referee reset.
 ]
 
 { #category : #accessing }

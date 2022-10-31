@@ -7,7 +7,12 @@ Class {
 { #category : #executing }
 HFPinObjectEvent >> basicExecuteOn: aHeapFuzzer [
 
-	aHeapFuzzer heap memory pinObject: allocation oop.
-	(aHeapFuzzer heap memory isForwarded: allocation oop) ifTrue: [
+	| oop |
+	oop := allocation oop.
+	(aHeapFuzzer heap memory isForwarded: oop) ifTrue:
+		[oop := aHeapFuzzer heap memory followForwarded: oop].
+
+	aHeapFuzzer heap memory pinObject: oop.
+	(aHeapFuzzer heap memory isForwarded: oop) ifTrue: [
 		allocation oop: (aHeapFuzzer heap memory followForwarded: allocation oop) ]
 ]

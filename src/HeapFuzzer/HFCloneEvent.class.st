@@ -7,5 +7,10 @@ Class {
 { #category : #executing }
 HFCloneEvent >> basicExecuteOn: aFuzzing [
 
-	aFuzzing heap memory clone: allocation oop
+	| oop |
+	oop := allocation oop.
+	(aFuzzing heap memory isForwarded: oop) ifTrue:
+		[oop := aFuzzing heap memory followForwarded: oop].
+
+	aFuzzing heap memory clone: oop
 ]

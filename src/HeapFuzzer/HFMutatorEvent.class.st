@@ -31,6 +31,7 @@ HFMutatorEvent class >> buildEventOn: aHeapFuzzer [
 HFMutatorEvent >> executeOn: aHeapFuzzer [
 
 	"If either was already collected, this event does nothing..."
+	| oop |
 	referer oop ifNil: [ ^ self ].
 	referee oop ifNil: [ ^ self ].
 
@@ -45,10 +46,16 @@ HFMutatorEvent >> executeOn: aHeapFuzzer [
 
 	((aHeapFuzzer heap memory hashBitsOf: referee oop)
 		= referee objectHash) ifFalse: [ ^ self ].
+
+	oop := referer oop.
+	(aHeapFuzzer heap memory isForwarded: oop) ifTrue:
+		[oop := aHeapFuzzer heap memory followForwarded: oop].
+	
+	((aHeapFuzzer heap memory numSlotsOf: oop) < (index)) ifTrue: [ ^self ].
 	
 	aHeapFuzzer heap memory
 		storePointer: index - 1
-		ofObject: referer oop
+		ofObject: oop
 		withValue: referee oop
 ]
 

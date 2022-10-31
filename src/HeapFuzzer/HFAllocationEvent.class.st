@@ -83,7 +83,7 @@ HFAllocationEvent >> arrayFormat: aHeapFuzzing [
 { #category : #accessing }
 HFAllocationEvent >> byteArrayFormat: aHeapFuzzing [ 
 	
-	^ aHeapFuzzing heap memory byteFormatForNumBytes: 1
+	^ aHeapFuzzing heap memory byteFormatForNumBytes: objectSize
 ]
 
 { #category : #executing }
@@ -188,6 +188,14 @@ HFAllocationEvent >> printOn: aStream [
 	aStream
 		nextPut: $(;
 		print: id;
+		nextPutAll: ' type:';
+		print: objectType;
+		nextPutAll: ' size';
+		print: objectSize;
+		nextPutAll: ' isNew:';
+		print: isNew;
+		nextPutAll: ' isRoot:';
+		print: isRoot;
 		nextPut: $)
 ]
 

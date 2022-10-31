@@ -66,3 +66,9 @@ HFUnaryObjectEvent >> printOn: aStream [
 		print: allocation id;
 		nextPut: $)
 ]
+
+{ #category : #initialization }
+HFUnaryObjectEvent >> reset [ 
+
+	allocation reset
+]
