@@ -95,6 +95,9 @@ HFAllocationEvent >> ephemeronFormat: aVMHeapFuzzer [
 { #category : #executing }
 HFAllocationEvent >> executeOn: aVMHeapFuzzer [
 
+	"Note: Because a mutation and genetics, a single allocation can be replayer.
+	In this case, we just allocate a new object and let the previous one live its life."
+
 	oop := isNew
 		       ifTrue: [ self allocateNew: aVMHeapFuzzer ]
 		       ifFalse: [ self allocateOld: aVMHeapFuzzer ].

@@ -49,6 +49,7 @@ HeapFuzzing >> addEvent: anEvent [
 HeapFuzzing >> addLiveObject: aHFAllocationEvent [
 
 	liveObjects add: aHFAllocationEvent.
+	deadObjects remove: aHFAllocationEvent ifAbsent: [ ]. "Can rise from the dead" 
 	^ aHFAllocationEvent
 ]
 
