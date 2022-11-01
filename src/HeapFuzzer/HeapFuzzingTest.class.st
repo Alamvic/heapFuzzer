@@ -97,6 +97,33 @@ HeapFuzzingTest >> testExecute [
 ]
 
 { #category : #test }
+HeapFuzzingTest >> testExecuteBecome [
+
+	| obj1 obj2 fuzzing result |
+	fuzzing := HeapFuzzing new.
+	obj1 := fuzzing addEvent: (HFAllocationEvent new
+		objectType: #array;
+		objectSize: 50;
+		isNew: false;
+		isRoot: true;
+		yourself).
+	obj2 := fuzzing addEvent: (HFAllocationEvent new
+		objectType: #array;
+		objectSize: 50;
+		isNew: false;
+		isRoot: true;
+		yourself).
+	fuzzing addEvent: (HFBecomeEvent new
+		referer: obj1;
+		referee: obj2;
+		twoWay: true;
+		copyHash: true;
+		yourself).
+	result := fuzzing execute.
+	self assert: result isError not.
+]
+
+{ #category : #test }
 HeapFuzzingTest >> testExecuteEmpty [
 
 	| fuzzing result |
