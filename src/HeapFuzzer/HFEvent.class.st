@@ -22,6 +22,12 @@ HFEvent >> isAllocation [
 	^ false
 ]
 
+{ #category : #'as yet unclassified' }
+HFEvent >> maybeEffectiveOn: previousEvents [
+
+	^ true
+]
+
 { #category : #resetting }
 HFEvent >> reset [
 	

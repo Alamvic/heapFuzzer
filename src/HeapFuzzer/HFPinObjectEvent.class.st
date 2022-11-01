@@ -13,6 +13,6 @@ HFPinObjectEvent >> basicExecuteOn: aHeapFuzzer [
 		[oop := aHeapFuzzer heap memory followForwarded: oop].
 
 	aHeapFuzzer heap memory pinObject: oop.
-	(aHeapFuzzer heap memory isForwarded: oop) ifTrue: [
-		allocation oop: (aHeapFuzzer heap memory followForwarded: allocation oop) ]
+"	(aHeapFuzzer heap memory isForwarded: oop) ifTrue: [
+		allocation oop: (aHeapFuzzer heap memory followForwarded: allocation oop) ]"
 ]

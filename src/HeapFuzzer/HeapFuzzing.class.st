@@ -32,14 +32,7 @@ HeapFuzzing >> addEffectiveEvent: anEvent [
 
 	"Add an event only it is not a nop (implicit or explicit)".
 	
-	anEvent class = HFNopEvent ifTrue: [ ^nil ].
-	anEvent class = HFMutatorEvent ifTrue: [
-		(events includes: anEvent referee) ifFalse: [ ^ nil ]. 
-		(events includes: anEvent referer) ifFalse: [ ^ nil ]. 
-	].
-	anEvent class = HFPinObjectEvent ifTrue: [
-		(events includes: anEvent allocation) ifFalse: [ ^ nil ]. 
-	].
+	(anEvent maybeEffectiveOn: events) ifFalse: [  ^nil ].
 	
 	^ self addEvent: anEvent.
 ]
@@ -97,7 +90,7 @@ HeapFuzzing >> basicExecute [
 			| event |
 			event := self events at: index.
 			count := index.
-			event executeOn: self ]
+			event executeOn: self. ]
 		displayingProgress: [ :iteration | 
 		'Fuzzing Event ' , iteration asString ].
 	self tearDown

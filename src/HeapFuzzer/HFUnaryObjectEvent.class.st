@@ -57,6 +57,12 @@ HFUnaryObjectEvent >> executeOn: aHeapFuzzer [
 	self basicExecuteOn: aHeapFuzzer
 ]
 
+{ #category : #'as yet unclassified' }
+HFUnaryObjectEvent >> maybeEffectiveOn: events [
+
+	^ events includes: allocation
+]
+
 { #category : #printing }
 HFUnaryObjectEvent >> printOn: aStream [
 

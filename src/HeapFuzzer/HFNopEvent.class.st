@@ -9,3 +9,9 @@ HFNopEvent >> executeOn: aVMHeapFuzzer [
 	
 	"Nothing!"
 ]
+
+{ #category : #'as yet unclassified' }
+HFNopEvent >> maybeEffectiveOn: events [
+
+	^ false
+]

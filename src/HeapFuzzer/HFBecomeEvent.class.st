@@ -1,9 +1,7 @@
 Class {
 	#name : #HFBecomeEvent,
-	#superclass : #HFEvent,
+	#superclass : #HFBinaryObjectEvent,
 	#instVars : [
-		'referee',
-		'referer',
 		'copyHash',
 		'twoWay'
 	],
@@ -25,6 +23,19 @@ HFBecomeEvent class >> buildEventOn: aHeapFuzzer [
 		twoWay: ({ true. false } atRandom);
 		copyHash: ({ true. false } atRandom);
 		yourself
+]
+
+{ #category : #executing }
+HFBecomeEvent >> basicExecuteOn: aFuzzing [
+
+	| array1 array2 |
+
+	array1 := aFuzzing heap newArrayWithSlots: 1.
+	array2 := aFuzzing heap newArrayWithSlots: 1.
+	aFuzzing heap memory storePointer: 0 ofObject: array1 withValue: referer oop.
+	aFuzzing heap memory storePointer: 0 ofObject: array2 withValue: referee oop.
+	
+	aFuzzing heap memory become: array1 with: array2 twoWay: twoWay copyHash: copyHash.
 ]
 
 { #category : #accessing }
@@ -82,37 +93,6 @@ HFBecomeEvent >> printOn: aStream [
 		nextPutAll: ' copyHash:';
 		print: copyHash;
 		nextPut: $)
-]
-
-{ #category : #accessing }
-HFBecomeEvent >> referee [
-
-	^ referee
-]
-
-{ #category : #accessing }
-HFBecomeEvent >> referee: anObject [
-
-	referee := anObject
-]
-
-{ #category : #accessing }
-HFBecomeEvent >> referer [
-
-	^ referer
-]
-
-{ #category : #accessing }
-HFBecomeEvent >> referer: anObject [
-
-	referer := anObject
-]
-
-{ #category : #initialization }
-HFBecomeEvent >> reset [
-
-	referer reset.
-	referee reset.
 ]
 
 { #category : #accessing }

@@ -1,9 +1,7 @@
 Class {
 	#name : #HFMutatorEvent,
-	#superclass : #HFEvent,
+	#superclass : #HFBinaryObjectEvent,
 	#instVars : [
-		'referer',
-		'referee',
 		'index'
 	],
 	#category : #HeapFuzzer
@@ -25,6 +23,23 @@ HFMutatorEvent class >> buildEventOn: aHeapFuzzer [
 		referee: object2;
 		index: object1 numberOfSlots atRandom;
 		yourself
+]
+
+{ #category : #executing }
+HFMutatorEvent >> basicExecuteOn: aHeapFuzzer [
+
+	| oop |
+
+	oop := referer oop.
+	(aHeapFuzzer heap memory isForwarded: oop) ifTrue:
+		[oop := aHeapFuzzer heap memory followForwarded: oop].
+	
+	((aHeapFuzzer heap memory numSlotsOf: oop) < (index)) ifTrue: [ ^self ].
+	
+	aHeapFuzzer heap memory
+		storePointer: index - 1
+		ofObject: oop
+		withValue: referee oop
 ]
 
 { #category : #executing }
@@ -83,35 +98,4 @@ HFMutatorEvent >> printOn: aStream [
 		nextPutAll: '-->';
 		print: referee id;
 		nextPut: $)
-]
-
-{ #category : #accessing }
-HFMutatorEvent >> referee [
-
-	^ referee
-]
-
-{ #category : #accessing }
-HFMutatorEvent >> referee: anObject [
-
-	referee := anObject
-]
-
-{ #category : #accessing }
-HFMutatorEvent >> referer [
-
-	^ referer
-]
-
-{ #category : #accessing }
-HFMutatorEvent >> referer: anObject [
-
-	referer := anObject
-]
-
-{ #category : #resetting }
-HFMutatorEvent >> reset [
-	
-	referer reset.
-	referee reset.
 ]

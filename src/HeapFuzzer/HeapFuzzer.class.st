@@ -96,9 +96,9 @@ HeapFuzzer >> basicMutate: aFuzzing [
 
 	aFuzzing events ifEmpty: [ ^ aFuzzing buildEvent: self ].
 
+	aFuzzing build: 5 events: self.
 	{ 
-		[ aFuzzing buildEvent: self ].
-		[ aFuzzing buildEvent: self ].
+		[ aFuzzing build: 5 events: self ].
 		[ aFuzzing events removeAt: (aFuzzing events size atRandom: random) ].
 		[ aFuzzing events at: (aFuzzing events size atRandom: random) put: (self newEventFor: aFuzzing) ] }
 		atRandom value
