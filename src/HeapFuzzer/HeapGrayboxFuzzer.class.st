@@ -99,16 +99,15 @@ HeapGrayboxFuzzer >> doStep [
 
 	"Get a fuzzing, execute it and uptate information"
 
-	| fuzzing fuzzing2 seed seed2 |
+	| fuzzing seed seed2 |
 	"Get a prepared seed, or generate a new fuzzing"
 	seed := nil.
 	fuzzing := seeds detect: [ :x | x result isNil ] ifNone: [
 					  self computeScore.
 		           seed := self chooseSeed.
-		           fuzzing := self mutate: seed.
 		           seed2 := self chooseSeed.
-		           fuzzing2 := self mutate: seed2.
-					fuzzing := self combine: fuzzing and: fuzzing2.
+					  fuzzing := self combine: seed and: seed2.
+		           fuzzing := self mutate: fuzzing.
 					  fuzzing simplify ].
 
 	"Execute the fuzzing"
@@ -211,7 +210,7 @@ HeapGrayboxFuzzer >> prepareSeeds [
 	1 to: 5 do: [ :iteration | 
 		| fuzzing |
 		fuzzing := HeapFuzzing new.
-		fuzzing build: 1 events: self.
+		fuzzing build: 20 events: self.
 		seeds add: fuzzing ]
 ]
 
