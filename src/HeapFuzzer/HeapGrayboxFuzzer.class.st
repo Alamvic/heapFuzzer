@@ -8,7 +8,8 @@ Class {
 		'coverageCounter',
 		'nodesCounter',
 		'callgraph',
-		'nodeDistances'
+		'nodeDistances',
+		'maxDist'
 	],
 	#category : #HeapFuzzer
 }
@@ -84,7 +85,7 @@ HeapGrayboxFuzzer >> computeScore [
 	seeds do: [ :s |
 		| score xscore | "use xscore do disable a line :)"
 		score := 10.0 * s coverage nodes size. "what is uber important is coverage"
-		score := score / (self seedDistance: s). "directed fuzzing"
+		score := score / (self seedDistance: s) second. "directed fuzzing with avg distance"
 		xscore := score - s events size. "small bonus for the size."
 		xscore := score - (coverageCounter at: s coverage nodes) size. "Small bonus for rare coverage. Maybe more bugs are lurking in rare path"
 		xscore := (1 + s effectCount) * score / (1 + s chooseCount). "Big bonus for effective seeds"
@@ -234,11 +235,17 @@ HeapGrayboxFuzzer >> prepareSeeds [
 { #category : #'as yet unclassified' }
 HeapGrayboxFuzzer >> seedDistance: aFuzzing [
 
-	"The best distance "
+	"The best distance.
+	Returns an array `{min. avg}` with respectively the minimal distance and the average distance"
 
-	| min sum |
+	| min sum max |
 
-	min := 100.
+	max := maxDist.
+	max ifNil: [ 
+		max := maxDist := nodeDistances max.
+	].
+
+	min := max+1.
 	sum := 0.
 	nodeDistances associationsDo: [ :assoc |
 		(aFuzzing coverage nodes includes: assoc key)
@@ -246,11 +253,11 @@ HeapGrayboxFuzzer >> seedDistance: aFuzzing [
 				(min > assoc value) ifTrue: [ min := assoc value ].
 				sum := sum + assoc value. ]
 			ifFalse: [
-				sum := sum + 100. ]
+				sum := sum + max + 1. ]
 	].
 	sum := sum / nodeDistances size.
 
-	^ (sum + min)/2.
+	^ { min. sum }
 ]
 
 { #category : #accessing }
