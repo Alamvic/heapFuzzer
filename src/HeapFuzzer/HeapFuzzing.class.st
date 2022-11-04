@@ -241,6 +241,18 @@ HeapFuzzing >> isReducible [
 	^ self events size > 1
 ]
 
+{ #category : #accessing }
+HeapFuzzing >> lastReduce [
+
+	^ lastReduce
+]
+
+{ #category : #accessing }
+HeapFuzzing >> lastReduce: anObject [
+
+	lastReduce := anObject
+]
+
 { #category : #'as yet unclassified' }
 HeapFuzzing >> postCopy [
 
