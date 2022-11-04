@@ -57,6 +57,30 @@ CoverageCollector >> basicRun: aBlock [
 	^ aBlock value
 ]
 
+{ #category : #'as yet unclassified' }
+CoverageCollector >> callgraph [
+
+	"Compute and return directed `edges` that connect nodes together.
+	
+	 A sequence is connected to each of its (directly) nested sequences.
+	 A sequence with a message send is connected to the main sequence of all methods with the same selector (there is no finer static analysis).
+	Note that only the `nodes` from the `methods`	are considered, so the resulting graph may not be connected.
+
+	 The result is a collection of pairs (arrays of 2 elements). The first element is the *from* node, the second element is the *target* node."
+
+	| visitor |
+	visitor := SequenceGraphVisitor new.
+	visitor collector: self.
+	
+	nodes ifNil: [ self initializeNodes ].
+
+	nodes do: [ :node |
+		node acceptVisitor: visitor.
+		].
+
+	^ edges := visitor edges.
+]
+
 { #category : #accessing }
 CoverageCollector >> collectResult [
 
@@ -71,6 +95,11 @@ CoverageCollector >> collectResult [
 	self reset.
 
 	^ res
+]
+
+{ #category : #accessing }
+CoverageCollector >> edges [
+	^ edges
 ]
 
 { #category : #accessing }
@@ -139,6 +168,47 @@ CoverageCollector >> methods [
 CoverageCollector >> methods: anObject [
 
 	methods := anObject
+]
+
+{ #category : #'as yet unclassified' }
+CoverageCollector >> nodeDistancesTo: aNodeOrMethod [
+
+	"Compute the distance of each node that can reach `aNodeOrMethod` (according to `callgraph`).
+	 Returns a dictionary Node->integer.
+	 Only nodes with a finite distance to `aNodeOrMethod` are present in the dictionary (including `aNode` itself with a distance of 0)."
+
+	| aNode todo result todoLater depth |
+	
+	aNode := aNodeOrMethod isCompiledMethod
+		ifTrue: [ aNodeOrMethod ast body ]
+		ifFalse: [ aNodeOrMethod ].
+	
+	self assert: (nodes includes: aNode).
+	result := IdentityDictionary new.
+	todo := OrderedCollection new.
+	todoLater := OrderedCollection new.
+	todo add: aNode.
+	result at: aNode put: 0.
+	depth := 1.
+	[ todo isNotEmpty ] whileTrue: [
+		| tmp |
+		todo do: [ :n |
+			edges select: [ :e | e second == n ] thenDo:  [ :e |
+				| n2 |
+				n2 := e first.
+				(result includesKey: n2) ifFalse: [ 
+					todoLater add: n2.
+					result at: n2 put: depth.
+				 ]
+			 ]
+		 ].
+		depth := depth + 1.
+		tmp := todo.
+		todo := todoLater.
+		todoLater := tmp.
+		todoLater removeAll.
+	].
+	^ result.
 ]
 
 { #category : #accessing }

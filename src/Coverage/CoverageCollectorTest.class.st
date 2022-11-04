@@ -75,6 +75,16 @@ CoverageCollectorTest >> testBasicCoverage [
 	self assert: res methods size equals: 2
 ]
 
+{ #category : #test }
+CoverageCollectorTest >> testCallgraph [
+
+	| cov graph |
+	cov := CoverageCollector new.
+	cov methods: (self class methods select: [ :m | 'method*' match: m selector ]).
+	graph := cov callgraph.
+	self assert: graph size equals: 21
+]
+
 { #category : #tests }
 CoverageCollectorTest >> testExaple [
 
@@ -142,6 +152,19 @@ CoverageCollectorTest >> testNodeCoverage2 [
 	self assert: res methods size equals: 6.
 	self assert: res nodes size equals: 13.
 	self assert: (cov nodes includesAll: res nodes).
+]
+
+{ #category : #test }
+CoverageCollectorTest >> testNodeDistancesTo [
+
+	| cov graph target distances |
+	cov := CoverageCollector new.
+	cov methods: (self class methods select: [ :m | 'method*' match: m selector ]).
+	graph := cov callgraph.
+		
+	target := (self class >> #methodCallee) ast body.
+	distances := cov nodeDistancesTo: target.
+	self assert: (distances values sorted) equals: { 0. 1. 1. 1. 2. 3}.
 ]
 
 { #category : #tests }
