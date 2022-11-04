@@ -6,7 +6,9 @@ Class {
 		'seeds',
 		'errors',
 		'coverageCounter',
-		'nodesCounter'
+		'nodesCounter',
+		'callgraph',
+		'nodeDistances'
 	],
 	#category : #HeapFuzzer
 }
@@ -82,12 +84,13 @@ HeapGrayboxFuzzer >> computeScore [
 	seeds do: [ :s |
 		| score xscore | "use xscore do disable a line :)"
 		score := 10.0 * s coverage nodes size. "what is uber important is coverage"
-		score := score - s events size. "small bonus for the size."
+		score := score / (self seedDistance: s). "directed fuzzing"
+		xscore := score - s events size. "small bonus for the size."
 		xscore := score - (coverageCounter at: s coverage nodes) size. "Small bonus for rare coverage. Maybe more bugs are lurking in rare path"
 		xscore := (1 + s effectCount) * score / (1 + s chooseCount). "Big bonus for effective seeds"
-		score := score * (self nodeScore: s). "Big bonus for rare path taken/not taken"
-		score := score / (coverageCounter at: s coverage nodes) size. "cancel bonus for coverages that have many seeds"
+		xscore := score * (self nodeScore: s). "Big bonus for rare path taken/not taken"
 		score := score raisedTo: 5. "powerscaling"
+		score := score / (coverageCounter at: s coverage nodes) size. "cancel bonus for coverages that have many seeds"
 		s score: score ].
 
 	"We sort because it is easier to display"
@@ -136,6 +139,8 @@ HeapGrayboxFuzzer >> fuzz [
 "	collector methods: SpurMemoryManager methods."
 "	collector methods: Spur64BitMemoryManager allMethods."
 	collector methods: ((#VMMaker asPackage classes select: [:c| 'Spur*' match: c name ]) flatCollect: [:c | c methods]).
+   collector callgraph.
+	nodeDistances := collector nodeDistancesTo: (SpurGenerationScavenger>>#scavengeUnfiredEphemeronsInRememberedSet).
 
 	collector installOn: [ self basicFuzz ].
 ]
@@ -149,6 +154,18 @@ HeapGrayboxFuzzer >> initialize [
 	errors := OrderedCollection new.
 	coverageCounter := Dictionary new.
 	nodesCounter := Bag new.
+]
+
+{ #category : #'as yet unclassified' }
+HeapGrayboxFuzzer >> methodMissing [
+
+	| methods all missing |
+	methods := seeds flatCollect: [ :s | s coverage methods collect: [ :m | m currentMethod ]  ] as: Set.
+	all := collector methods collect: [ :m | m currentMethod ] as: Set.
+	self assert: (all includesAll: methods).
+	missing := all \ methods.
+	
+	^ missing
 ]
 
 { #category : #'as yet unclassified' }
@@ -212,6 +229,28 @@ HeapGrayboxFuzzer >> prepareSeeds [
 		fuzzing := HeapFuzzing new.
 		fuzzing build: 20 events: self.
 		seeds add: fuzzing ]
+]
+
+{ #category : #'as yet unclassified' }
+HeapGrayboxFuzzer >> seedDistance: aFuzzing [
+
+	"The best distance "
+
+	| min sum |
+
+	min := 100.
+	sum := 0.
+	nodeDistances associationsDo: [ :assoc |
+		(aFuzzing coverage nodes includes: assoc key)
+			ifTrue: [
+				(min > assoc value) ifTrue: [ min := assoc value ].
+				sum := sum + assoc value. ]
+			ifFalse: [
+				sum := sum + 100. ]
+	].
+	sum := sum / nodeDistances size.
+
+	^ (sum + min)/2.
 ]
 
 { #category : #accessing }
