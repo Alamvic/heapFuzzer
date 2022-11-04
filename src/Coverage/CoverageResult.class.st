@@ -105,7 +105,7 @@ CoverageResult >> nodes: anObject [
 CoverageResult >> percentage [
 
 	collector methods isEmpty ifTrue: [ ^ Float nan ].
-	^ 100.0 * methods size / collector methods size
+	^ 100.0 * nodes size / collector nodes size
 ]
 
 { #category : #printing }
