@@ -41,14 +41,26 @@ HeapGrayboxFuzzer >> basicFuzz [
 { #category : #accessing }
 HeapGrayboxFuzzer >> chart [
 
-| timeline list chart max listmax |
+	^ self chart: [ :f | f coverage nodes size ].
+
+]
+
+{ #category : #accessing }
+HeapGrayboxFuzzer >> chart: aBlock [
+
+| timeline list chart max listmax initialvalue finalvalue |
 
 timeline := seeds select: [ :f | f coverage isNotNil ].
 timeline sort: [ :a :b | a timestamp < b timestamp ].
-list := timeline collect: [ :f| f coverage nodes size ].
+list := timeline collect: aBlock.
 
-max := 0.
-listmax := timeline collect: [ :f | max := f coverage nodes size max: max ].
+"Compute the overline/underline. We sample some first and last events to know the trend and chose wich one"
+initialvalue := (list first: (5 min: list size)) sum.
+finalvalue := (list last: (5 min: list size)) sum.
+max := list first.
+initialvalue > finalvalue
+	ifTrue: [ listmax := list collect: [ :v | max := v min: max ] ]
+	ifFalse: [ listmax := list collect: [ :v | max := v max: max ] ].
 
 chart := RSChart new.
 chart add: (RSScatterPlot new
