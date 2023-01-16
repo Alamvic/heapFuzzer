@@ -10,10 +10,19 @@ This approach works on top of the PharoVM (https://github.com/pharo-project/phar
 Execute the following and inspect the results:
 
 ```smalltalk
-(1 to: 100) collect: [ :i |
-	| fuzzer |
-	fuzzer := HeapFuzzer new.
-	fuzzer fuzz ].
+result := HeapFuzzer fullRandom fuzzEvents: 100.
+
+"Then reproduce the error"
+result fuzzing basicExecute.
 ```
 
+There are other pre-built fuzzers and you can configure your own:
 
+```smalltalk
+HeapFuzzer fullRandom.
+HeapFuzzer forEphemerons.
+HeapFuzzer forCompaction.
+HeapFuzzer forCornerAllocationCases.
+```
+
+Check the fuzzer creation methods for more information.
