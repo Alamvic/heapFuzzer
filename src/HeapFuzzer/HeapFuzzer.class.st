@@ -147,7 +147,7 @@ HeapFuzzer >> fuzz [
 	fuzzing := HeapFuzzing new.
 	[ 
 	fuzzing setUp.
-	[ self atEnd ] whileFalse: [ 
+	[ (timeout atEnd: fuzzing) ] whileFalse: [ 
 		| event |
 		event := fuzzing buildEvent: self.
 		event executeOn: fuzzing ].

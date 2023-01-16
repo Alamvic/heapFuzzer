@@ -187,6 +187,12 @@ HeapFuzzing >> events: aCollection [
 	events := aCollection
 ]
 
+{ #category : #accessing }
+HeapFuzzing >> eventsSize [
+	
+	^ events size
+]
+
 { #category : #executing }
 HeapFuzzing >> execute [
 
