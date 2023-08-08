@@ -178,6 +178,12 @@ HFAllocationEvent >> isRoot: anObject [
 ]
 
 { #category : #accessing }
+HFAllocationEvent >> numberOfSlots [
+
+	^ self fixedObjectSize + self variableObjectSize
+]
+
+{ #category : #accessing }
 HFAllocationEvent >> objectSize [
 	
 	^ self variableObjectSize + self fixedObjectSize

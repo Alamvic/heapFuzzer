@@ -17,7 +17,7 @@ HeapFuzzer class >> forCompaction [
 
 	^ self new
 		  addEventBuilder: (HFAllocationEventBuilder default
-				   objectSizes: { 0. 20. 255. 1000 };
+				   variableObjectSizes: { 0. 20. 255. 1000 };
 				   objectTypes: { #array };
 				   yourself)
 		  frequency: 10;
@@ -31,7 +31,7 @@ HeapFuzzer class >> forCornerAllocationCases [
 
 	^ self new
 		  addEventBuilder: (HFAllocationEventBuilder default
-				   objectSizes: { 0. 20. 255. 100000 };
+				   variableObjectSizes: { 0. 20. 255. 100000 };
 					objectTypes: { #array };
 				   yourself)
 		  frequency: 10;
@@ -46,12 +46,35 @@ HeapFuzzer class >> forEphemerons [
 	^ self new
 		  addEventBuilder: (HFAllocationEventBuilder default
 				   objectTypes: { #ephemeron };
-				   objectSizes: { 0. 1. 2 };
+				   variableObjectSizes: { 0. 1. 2 };
 				   yourself)
 		  frequency: 10;
 		  addEventBuilder: HFMutatorEvent frequency: 10;
 		  addEventBuilder: HFNewSpaceCollectionEvent frequency: 1;
 		  addEventBuilder: HFOldSpaceCollectionEvent frequency: 1;
+		  yourself
+]
+
+{ #category : #'as yet unclassified' }
+HeapFuzzer class >> forEphemerons2 [
+
+	^ self new
+		  addEventBuilder: (HFAllocationEventBuilder default
+				   objectTypes: { #ephemeron };
+				   fixedObjectSizes: { 2 };
+				   variableObjectSizes: { 0 };
+					allocationSpaces: { #new };
+				   yourself)
+		  frequency: 30;
+		addEventBuilder: (HFAllocationEventBuilder default
+				   fixedObjectSizes: { 0 };
+				   variableObjectSizes: { 0 };
+					objectTypes: { #array };
+					allocationSpaces: { #new };
+				   yourself)
+		  frequency: 20;
+		  addEventBuilder: (HFMutatorEventBuilder default indexes: { 1. 2 }; yourself) frequency: 40;
+		  addEventBuilder: HFNewSpaceCollectionEvent frequency: 5;
 		  yourself
 ]
 
@@ -152,7 +175,7 @@ HeapFuzzer >> fuzz [
 		event := fuzzing buildEvent: self.
 		event executeOn: fuzzing ].
 	fuzzing tearDown ]
-		on: Error
+		on: Error, Halt
 		do: [ :e | 
 			^ HeapFuzzingError new
 				  error: e freeze;

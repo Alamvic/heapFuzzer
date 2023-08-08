@@ -103,13 +103,13 @@ HeapFuzzingTest >> testExecuteBecome [
 	fuzzing := HeapFuzzing new.
 	obj1 := fuzzing addEvent: (HFAllocationEvent new
 		objectType: #array;
-		objectSize: 50;
+		variableObjectSize: 50;
 		isNew: false;
 		isRoot: true;
 		yourself).
 	obj2 := fuzzing addEvent: (HFAllocationEvent new
 		objectType: #array;
-		objectSize: 50;
+		variableObjectSize: 50;
 		isNew: false;
 		isRoot: true;
 		yourself).
@@ -164,19 +164,19 @@ HeapFuzzingTest >> testExecuteRemap [
 	fuzzing := HeapFuzzing new.
 	obj1 := fuzzing addEvent: (HFAllocationEvent new
 		objectType: #array;
-		objectSize: 50;
+		variableObjectSize: 50;
 		isNew: false;
 		isRoot: false;
 		yourself).
 	obj2 := fuzzing addEvent: (HFAllocationEvent new
 		objectType: #array;
-		objectSize: 50;
+		variableObjectSize: 50;
 		isNew: false;
 		isRoot: true;
 		yourself).
 	obj3 := fuzzing addEvent: (HFAllocationEvent new
 		objectType: #array;
-		objectSize: 50;
+		variableObjectSize: 50;
 		isNew: false;
 		isRoot: true;
 		yourself).
@@ -201,7 +201,7 @@ HeapFuzzingTest >> testNewCollectedObjectIsDead [
 	fuzzer := HeapFuzzing new.
 	allocation := HFAllocationEvent new
 		objectType: #ephemeron;
-		objectSize: 2;
+		variableObjectSize: 2;
 		isNew: true;
 		isRoot: false;
 		yourself.
@@ -219,7 +219,7 @@ HeapFuzzingTest >> testNewCollectedObjectIsLive [
 	fuzzer := HeapFuzzing new.
 	allocation := HFAllocationEvent new
 		objectType: #ephemeron;
-		objectSize: 2;
+		variableObjectSize: 2;
 		isNew: true;
 		isRoot: true;
 		yourself.
@@ -255,7 +255,7 @@ HeapFuzzingTest >> testOldCollectedObjectIsDead [
 	fuzzer := HeapFuzzing new.
 	allocation := HFAllocationEvent new
 		objectType: #ephemeron;
-		objectSize: 2;
+		variableObjectSize: 2;
 		isNew: false;
 		isRoot: false;
 		yourself.
@@ -273,7 +273,7 @@ HeapFuzzingTest >> testOldCollectedObjectIsLive [
 	fuzzer := HeapFuzzing new.
 	allocation := HFAllocationEvent new
 		objectType: #ephemeron;
-		objectSize: 2;
+		variableObjectSize: 2;
 		isNew: false;
 		isRoot: true;
 		yourself.

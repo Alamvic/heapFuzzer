@@ -7,24 +7,6 @@ Class {
 	#category : #HeapFuzzer
 }
 
-{ #category : #building }
-HFMutatorEvent class >> buildEventOn: aHeapFuzzer [ 
-	
-	| object1 object2 |
-	
-	object1 := aHeapFuzzer randomAllocationEvent.
-	object1 ifNil: [ ^ HFNopEvent new ].
-	object2 := aHeapFuzzer randomAllocationEvent.
-	
-	object1 numberOfSlots <= 0 ifTrue: [ ^ HFNopEvent new ].
-	
-	^ self new
-		referer: object1;
-		referee: object2;
-		index: object1 numberOfSlots atRandom;
-		yourself
-]
-
 { #category : #executing }
 HFMutatorEvent >> basicExecuteOn: aHeapFuzzer [
 
