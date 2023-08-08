@@ -5,8 +5,9 @@ Class {
 		'rootValues',
 		'pinValues',
 		'objectTypes',
-		'objectSizes',
-		'allocationSpaces'
+		'allocationSpaces',
+		'variableObjectSizes',
+		'fixedObjectSizes'
 	],
 	#category : #'HeapFuzzer-Builders'
 }
@@ -16,7 +17,8 @@ HFAllocationEventBuilder class >> default [
 
 	^ self new
 		objectTypes: { #array . #ephemeron };
-		objectSizes: (0 to: 1000);
+		variableObjectSizes: (0 to: 1000);
+		fixedObjectSizes: (0 to: 1000);
 		allocationSpaces: { #old . #new };
 		rootValues: {true . false};
 		yourself
@@ -40,27 +42,22 @@ HFAllocationEventBuilder >> buildEventOn: aHeapFuzzer [
 	^ self newRandom
 ]
 
+{ #category : #accessing }
+HFAllocationEventBuilder >> fixedObjectSizes: anObject [
+
+	fixedObjectSizes := anObject
+]
+
 { #category : #building }
 HFAllocationEventBuilder >> newRandom [
 	
 	^ HFAllocationEvent new
 		objectType: objectTypes atRandom;
-		objectSize: objectSizes atRandom;
+		variableObjectSize: variableObjectSizes atRandom;
+		fixedObjectSize: fixedObjectSizes atRandom;
 		isNew: allocationSpaces atRandom == #new;
 		isRoot: rootValues atRandom;
 		yourself
-]
-
-{ #category : #accessing }
-HFAllocationEventBuilder >> objectSizes [
-
-	^ objectSizes
-]
-
-{ #category : #accessing }
-HFAllocationEventBuilder >> objectSizes: anObject [
-
-	objectSizes := anObject
 ]
 
 { #category : #accessing }
@@ -97,4 +94,16 @@ HFAllocationEventBuilder >> rootValues [
 HFAllocationEventBuilder >> rootValues: anObject [
 
 	rootValues := anObject
+]
+
+{ #category : #accessing }
+HFAllocationEventBuilder >> variableObjectSizes [
+
+	^ variableObjectSizes
+]
+
+{ #category : #accessing }
+HFAllocationEventBuilder >> variableObjectSizes: anObject [
+
+	variableObjectSizes := anObject
 ]

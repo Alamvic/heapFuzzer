@@ -4,9 +4,10 @@ Class {
 	#instVars : [
 		'id',
 		'objectType',
-		'objectSize',
 		'isNew',
-		'isRoot'
+		'isRoot',
+		'variableObjectSize',
+		'fixedObjectSize'
 	],
 	#category : #HeapFuzzer
 }
@@ -15,6 +16,14 @@ Class {
 HFAllocationEvent class >> buildEventOn: aHeapFuzzer [ 
 	
 	^ self newRandom
+]
+
+{ #category : #helpers }
+HFAllocationEvent class >> newFixedObjectSize [
+
+	"in slots size"
+
+	^ 2000 atRandom
 ]
 
 { #category : #helpers }
@@ -36,14 +45,14 @@ HFAllocationEvent class >> newRandom [
 	
 	^ self new
 		objectType: self newObjectType;
-		objectSize: self newObjectSize;
+		variableObjectSize: self newObjectSize;
 		isNew: {true . false} atRandom;
 		isRoot: {true . false} atRandom;
 		yourself
 ]
 
 { #category : #executing }
-HFAllocationEvent >> allocateNew: aVMHeapFuzzer [
+HFAllocationEvent >> allocateIn: aVMHeapFuzzer using: anAllocationBlock [
 
 	| classObj format |
 	format := self
@@ -51,27 +60,33 @@ HFAllocationEvent >> allocateNew: aVMHeapFuzzer [
 		          with: aVMHeapFuzzer.
 	classObj := aVMHeapFuzzer
 		            classWithFormat: format
-		            fixedSlots: objectSize.
-	^ aVMHeapFuzzer heap memory
-		  allocateSlots: objectSize
-		  format: format
-		  classIndex: classObj objectHash
+		            fixedSlots: fixedObjectSize.
+	oop := anAllocationBlock value: format value: classObj.
+	aVMHeapFuzzer heap memory
+		fillObj: oop
+		numSlots: fixedObjectSize + variableObjectSize
+		with: aVMHeapFuzzer heap memory nilObject.
+	^ oop
+]
+
+{ #category : #executing }
+HFAllocationEvent >> allocateNew: aVMHeapFuzzer [
+
+	^ self allocateIn: aVMHeapFuzzer using: [ :format :classObj |
+		  aVMHeapFuzzer heap memory
+			  allocateSlots: fixedObjectSize + variableObjectSize
+			  format: format
+			  classIndex: classObj objectHash ]
 ]
 
 { #category : #executing }
 HFAllocationEvent >> allocateOld: aVMHeapFuzzer [
 
-	| classObj format |
-	format := self
-		          perform: (objectType asString , 'Format:') asSymbol
-		          with: aVMHeapFuzzer.
-	classObj := aVMHeapFuzzer
-		            classWithFormat: format
-		            fixedSlots: objectSize.
-	^ aVMHeapFuzzer heap memory
-		  allocateSlotsInOldSpace: objectSize
-		  format: format
-		  classIndex: classObj objectHash
+	^ self allocateIn: aVMHeapFuzzer using: [ :format :classObj |
+		  aVMHeapFuzzer heap memory
+			  allocateSlotsInOldSpace: fixedObjectSize + variableObjectSize
+			  format: format
+			  classIndex: classObj objectHash ]
 ]
 
 { #category : #accessing }
@@ -83,7 +98,7 @@ HFAllocationEvent >> arrayFormat: aHeapFuzzing [
 { #category : #accessing }
 HFAllocationEvent >> byteArrayFormat: aHeapFuzzing [ 
 	
-	^ aHeapFuzzing heap memory byteFormatForNumBytes: objectSize
+	^ aHeapFuzzing heap memory byteFormatForNumBytes: variableObjectSize
 ]
 
 { #category : #executing }
@@ -104,13 +119,20 @@ HFAllocationEvent >> executeOn: aVMHeapFuzzer [
 	oop ifNil: [ 
 		aVMHeapFuzzer heap memory growOldSpaceByAtLeast: 0.
 		^ self executeOn: aVMHeapFuzzer ].
-	aVMHeapFuzzer heap memory
-		fillObj: oop
-		numSlots: objectSize
-		with: aVMHeapFuzzer heap memory nilObject.
 	isRoot ifTrue: [ aVMHeapFuzzer addRoot: oop ].
 	hash := aVMHeapFuzzer heap memory hashBitsOf: oop.
 	aVMHeapFuzzer addLiveObject: self.
+]
+
+{ #category : #accessing }
+HFAllocationEvent >> fixedObjectSize [
+	^ fixedObjectSize
+]
+
+{ #category : #accessing }
+HFAllocationEvent >> fixedObjectSize: anObject [
+
+	fixedObjectSize := anObject
 ]
 
 { #category : #accessing }
@@ -156,21 +178,9 @@ HFAllocationEvent >> isRoot: anObject [
 ]
 
 { #category : #accessing }
-HFAllocationEvent >> numberOfSlots [
-	
-	^ objectSize
-]
-
-{ #category : #accessing }
 HFAllocationEvent >> objectSize [
-
-	^ objectSize
-]
-
-{ #category : #accessing }
-HFAllocationEvent >> objectSize: anObject [
-
-	objectSize := anObject
+	
+	^ self variableObjectSize + self fixedObjectSize
 ]
 
 { #category : #accessing }
@@ -191,15 +201,29 @@ HFAllocationEvent >> printOn: aStream [
 	aStream
 		nextPut: $(;
 		print: id;
-		nextPutAll: ' type:';
+		nextPutAll: ' type: ';
 		print: objectType;
-		nextPutAll: ' size';
-		print: objectSize;
+		nextPutAll: ' fixedSize: ';
+		print: fixedObjectSize;
+		nextPutAll: ' variableSize: ';
+		print: variableObjectSize;
 		nextPutAll: ' isNew:';
 		print: isNew;
 		nextPutAll: ' isRoot:';
 		print: isRoot;
 		nextPut: $)
+]
+
+{ #category : #accessing }
+HFAllocationEvent >> variableObjectSize [
+	
+	^ variableObjectSize
+]
+
+{ #category : #accessing }
+HFAllocationEvent >> variableObjectSize: anObject [
+
+	variableObjectSize := anObject
 ]
 
 { #category : #accessing }
